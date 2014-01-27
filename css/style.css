@@ -423,7 +423,7 @@ th {
 
 .nestableWrapper {
     width:90%;
-    margin:0 auto;
+    margin:10px auto;
     overflow:auto;
 }
 
@@ -434,11 +434,26 @@ ul {
     padding:0;
     width:250px;
     float:left;
+    margin:0 10px;
 }
 
 ul li {
     border-bottom:1px solid #000;
     padding:8px 5px;
+    cursor:move;
+}
+
+ul .head, ul .head:hover {
+    cursor:default;
+    background:#fff;
+    border-radius:5px 5px 0 0;
+}
+
+ul .head .addItem {
+    margin:-16px 0 0 0;
+    float:right;
+    font-size:46px;
+    font-weight:bold;
     cursor:pointer;
 }
 
@@ -446,7 +461,8 @@ ul li:hover, ul .active {
     background:#f3f3f3;
 }
 
-ul .last {
+ul li:last-child {
+    border-radius:0 0 5px 5px;
     border:none;
 }
 
