@@ -100,7 +100,8 @@
                     }
                 })
                 .appendTo(el)
-                .children('input').keyup(function (event) {
+                .children('input').focus()
+                    .keyup(function (event) {
                     console.log(event.keyCode);
                     if (event.keyCode === 13) {
                         $('<h3>' + $(this).val() + '</h3>').appendTo($(this).parent());
