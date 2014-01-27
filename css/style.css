@@ -469,3 +469,7 @@ ul li.head, ul .head:hover {
 ul li h3 {
     text-align:center;
 }
+
+ul li input {
+    width:235px;
+}
