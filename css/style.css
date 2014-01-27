@@ -443,12 +443,6 @@ ul li {
     cursor:move;
 }
 
-ul .head, ul .head:hover {
-    cursor:default;
-    background:#fff;
-    border-radius:5px 5px 0 0;
-}
-
 ul .head .addItem {
     margin:-16px 0 0 0;
     float:right;
@@ -464,6 +458,12 @@ ul li:hover, ul .active {
 ul li:last-child {
     border-radius:0 0 5px 5px;
     border:none;
+}
+
+ul li.head, ul .head:hover {
+    cursor:default;
+    background:#fff;
+    border-radius:5px 5px 0 0;
 }
 
 ul li h3 {

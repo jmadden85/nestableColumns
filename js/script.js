@@ -21,6 +21,8 @@
             var thisItem = curr[thisId];
             var thisItemTitle = $(item).children('h3').html();
             var itemParent;
+            var newAncestry = $(item).parent().attr('data-ancestry');
+            var newParent;
 
             //check if this item is active
             //if it is do nothing
@@ -35,12 +37,19 @@
             //add active class to this item
             $(item).addClass('active');
 
+            if (newAncestry !== 'root') {
+                newAncestry += '.' + thisId;
+            } else {
+                newAncestry = thisId;
+            }
+            newParent = that.getAncestry(newAncestry);
             //Check if the selected item has a ancestors
             if (itemAncestry) {
                 //Set item parent to the correct object based on ancestry
                 itemParent = that.getAncestry(itemAncestry);
                 thisItem = itemParent[thisId];
             }
+            console.log(newAncestry, newParent);
             //check if object has been defined or not yet
             //and define it
             if (!thisItem && !itemParent) {
@@ -51,17 +60,18 @@
                 thisItem = itemParent[thisId];
             }
             //display next container
-            this.showChildContainer(thisItem, itemColumn, thisItemTitle);
+            this.showChildContainer(thisItem, itemColumn, thisItemTitle, newAncestry);
         },
         //function to show new container
-        showChildContainer : function (item, column, title) {
+        showChildContainer : function (item, column, title, ancestry) {
             //set new column number to current column + 1
             var newCol = +column + 1;
             var that = this;
             //create column add attributes
             $('<ul/>', {
                     'class': 'column',
-                    'data-colNum': newCol
+                    'data-colNum': newCol,
+                    'data-ancestry': ancestry
             }).appendTo('.nestableWrapper');
             var thisColumn = $('[data-colNum="' + newCol + '"]');
             //add header to this column
@@ -76,7 +86,7 @@
                 var ancestry = item.children[i].ancestry;
                 $('<li class="item" data-ancestry="' + ancestry + '" data-id="' + id + '">' +
                     '<h3>' + title + '</h3>' +
-                    '</li>').appendTo('[data-colNum="' + newCol + '"]');
+                '</li>').appendTo('[data-colNum="' + newCol + '"]');
             }
             //add select method to all new items
             //add add item method to new column
@@ -91,6 +101,9 @@
         //method to add new item
         addItem : function (el) {
             console.log(el.attr('data-colnum'));
+            $('<li class="item" data-ancestry="2" data-id="55">' +
+                '<h3>abcd</h3>' +
+            '</li>').appendTo(el);
         },
         //get ancestors of clicked item based on this ancestry
         getAncestry : function (ancestry) {
