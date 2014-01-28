@@ -7,9 +7,12 @@
             $('.item').click(function () {
                 that.select(this);
             });
+            //add the add item functionality
             $('.addItem').click(function () {
                 that.addItem($(this).parents('ul'));
             });
+            //init dragging code
+            that.dragSet();
         },
         //method for selecting an element
         select : function (item) {
@@ -43,10 +46,6 @@
             newParent = that.getAncestry(newAncestry);
             //display next container
             this.showChildContainer(newParent, itemColumn, thisItemTitle, newAncestry);
-        },
-        //method to site title of new item
-        setItemTitle : function (item) {
-
         },
         //method to show new container
         showChildContainer : function (item, column, title, ancestry) {
@@ -91,7 +90,7 @@
             //increment next node by 1
             curr.nextNode++;
             //append the new item
-            $('<li><input type="text"></li>')
+            $('<li><input type="text" draggable="true"></li>')
                 .addClass('item')
                 .attr('data-id', curr.nextNode)
                 .on({
@@ -100,14 +99,50 @@
                     }
                 })
                 .appendTo(el)
-                .children('input').focus()
+                //add focus to new input element and function to create new h3 when user hits enter
+                .children('input')
+                    .focus()
                     .keyup(function (event) {
-                    console.log(event.keyCode);
                     if (event.keyCode === 13) {
                         $('<h3>' + $(this).val() + '</h3>').appendTo($(this).parent());
                         $(this).remove();
                     }
                 });
+        },
+        dragSet : function () {
+            var dragUnset = document.querySelectorAll('[dragUnset]');
+            var maskHeight = document.querySelector('.item').scrollHeight;
+            var maskWidth = document.querySelector('.item').scrollWidth;
+            var dragStartHandler = function (e) {
+                this.style.opacity = '0.6';
+                this.setAttribute('dragging', true);
+            };
+            var dragOverHandler = function (e) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                }
+                e.dataTransfer.dropEffect = 'move';
+
+                return false;
+            };
+            var dragEnterHandler = function (e) {
+                if (this.getAttribute('dragging')) {
+                    return false;
+                }
+
+                this.classList.add('dragOver');
+                this.children[0].classList.add('over');
+            };
+            var dragLeaveHandler = function (e) {
+                this.children[0].classList.remove('over');
+            };
+            [].forEach.call(dragUnset, function (el) {
+                el.addEventListener('dragstart', dragStartHandler, false);
+                el.addEventListener('dragenter', dragEnterHandler, false);
+                el.addEventListener('dragover', dragOverHandler, false);
+                el.addEventListener('dragleave', dragLeaveHandler, false);
+                el.removeAttribute('dragUnset');
+            });
         },
         //get ancestors of clicked item based on this ancestry
         getAncestry : function (ancestry) {
