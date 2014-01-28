@@ -114,12 +114,14 @@
             var maskHeight = document.querySelector('.item').scrollHeight;
             var maskWidth = document.querySelector('.item').scrollWidth;
             var dragSrcEl = null;
+            //Drag start handler
             var dragStartHandler = function (e) {
                 this.setAttribute('dragging', true);
                 dragSrcEl = this;
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/html', this.innerHTML);
             };
+            //Drag over handler
             var dragOverHandler = function (e) {
                 if (e.preventDefault) {
                     e.preventDefault();
@@ -129,20 +131,24 @@
 
                 return false;
             };
+            //Drag enter handler
             var dragEnterHandler = function (e) {
                 if (this.getAttribute('dragging')) {
                     return false;
                 }
 
-                this.children[0].classList.add('over');
+                this.querySelector('h3').classList.add('over');
             };
+            //Drag leave handler
             var dragLeaveHandler = function (e) {
                 this.children[0].classList.remove('over');
             };
+            //Drag end handler
             var dragEndHandler = function (e) {
                 document.querySelector('.over').classList.remove('over');
                 document.querySelector('[dragging]').removeAttribute('dragging');
             };
+            //drop handler
             var dropHandler = function (e) {
                 if (e.stopPropagation) {
                     e.stopPropagation();
