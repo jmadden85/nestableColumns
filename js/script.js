@@ -8,7 +8,7 @@
                 that.select(this);
             });
             $('.addItem').click(function () {
-                that.addItem($(this).parents('ul'));
+                that.addItem($(this).parents().siblings('ul'));
             });
         },
         //method for selecting an element
@@ -26,7 +26,7 @@
                 return false;
             //if it isn't active remove other columns after this one
             } else if ($(item).siblings().hasClass('active')) {
-                $('[data-colNum="' + itemColumn + '"] ~ ul').remove();
+                $(item).parents('section').nextAll().remove();
             }
             //remove active class from all siblings
             $(item).siblings().removeClass('active');
@@ -44,27 +44,27 @@
             //display next container
             this.showChildContainer(newParent, itemColumn, thisItemTitle, newAncestry);
         },
-        //method to site title of new item
-        setItemTitle : function (item) {
-
-        },
         //method to show new container
         showChildContainer : function (item, column, title, ancestry) {
             //set new column number to current column + 1
             var newCol = +column + 1;
             var that = this;
+            //Create and append new container
+            var newColContainer = $('<section class="colWrapper"></section>');
+            newColContainer.appendTo('.nestableWrapper');
+            //add header to this column
+            $('<header>' +
+                '<span class="sectionTitle">Modules</span>' +
+                '<div class="addItem">+</div>' +
+                '</header>'
+            ).appendTo(newColContainer);
             //create column add attributes
             $('<ul/>', {
                     'class': 'column',
                     'data-colNum': newCol,
                     'data-ancestry': ancestry
-            }).appendTo('.nestableWrapper');
+            }).appendTo(newColContainer);
             var thisColumn = $('[data-colNum="' + newCol + '"]');
-            //add header to this column
-            $('<li class="head">' +
-                '<span id="sectionTitle">Modules</span>' +
-                '<div class="addItem">+</div>' +
-                '</li>').appendTo(thisColumn);
             //get clicked item children and build list items from them
             for (var i in item.children) {
                 var title = item.children[i].title;
@@ -72,7 +72,9 @@
                 var ancestry = item.children[i].ancestry;
                 $('<li class="item" data-id="' + id + '">' +
                     '<h3>' + title + '</h3>' +
-                '</li>').appendTo('[data-colNum="' + newCol + '"]');
+                    '</li>' +
+                    '<li class="slot"></li>'
+                ).appendTo(thisColumn);
             }
             //add select method to all new items
             //add add item method to new column
@@ -80,8 +82,8 @@
             thisColumnItems.click(function () {
                 that.select(this);
             });
-            thisColumn.find('.addItem').click(function () {
-                that.addItem($(this).parents('ul'));
+            newColContainer.find('.addItem').click(function () {
+                that.addItem($(this).parents().siblings('ul'));
             });
         },
         //method to add new item
@@ -102,12 +104,13 @@
                 .appendTo(el)
                 .children('input').focus()
                     .keyup(function (event) {
-                    console.log(event.keyCode);
                     if (event.keyCode === 13) {
                         $('<h3>' + $(this).val() + '</h3>').appendTo($(this).parent());
                         $(this).remove();
                     }
                 });
+            //append new spacer
+            $('<li class="slot"></li>').appendTo(el);
         },
         //get ancestors of clicked item based on this ancestry
         getAncestry : function (ancestry) {
