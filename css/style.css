@@ -490,7 +490,7 @@ ul li input {
    Drag styles
    ========================================================================== */
 
-[draggabl] {
+[draggable] {
     -moz-user-select: none;
     -khtml-user-select: none;
     -webkit-user-select: none;
@@ -500,3 +500,6 @@ ul li input {
     -webkit-user-drag: element;
 }
 
+[dragging] {
+    opacity:0.6;
+}

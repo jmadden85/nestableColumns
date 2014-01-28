@@ -113,14 +113,18 @@
             var dragUnset = document.querySelectorAll('[dragUnset]');
             var maskHeight = document.querySelector('.item').scrollHeight;
             var maskWidth = document.querySelector('.item').scrollWidth;
+            var dragSrcEl = null;
             var dragStartHandler = function (e) {
-                this.style.opacity = '0.6';
                 this.setAttribute('dragging', true);
+                dragSrcEl = this;
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', this.innerHTML);
             };
             var dragOverHandler = function (e) {
                 if (e.preventDefault) {
                     e.preventDefault();
                 }
+
                 e.dataTransfer.dropEffect = 'move';
 
                 return false;
@@ -130,17 +134,35 @@
                     return false;
                 }
 
-                this.classList.add('dragOver');
                 this.children[0].classList.add('over');
             };
             var dragLeaveHandler = function (e) {
                 this.children[0].classList.remove('over');
+            };
+            var dragEndHandler = function (e) {
+                document.querySelector('.over').classList.remove('over');
+                document.querySelector('[dragging]').removeAttribute('dragging');
+            };
+            var dropHandler = function (e) {
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                }
+
+                if (dragSrcEl !== this) {
+                    // Set the source column's HTML to the HTML of the column we dropped on.
+                    dragSrcEl.innerHTML = this.innerHTML;
+                    this.innerHTML = e.dataTransfer.getData('text/html');
+                }
+
+                return false;
             };
             [].forEach.call(dragUnset, function (el) {
                 el.addEventListener('dragstart', dragStartHandler, false);
                 el.addEventListener('dragenter', dragEnterHandler, false);
                 el.addEventListener('dragover', dragOverHandler, false);
                 el.addEventListener('dragleave', dragLeaveHandler, false);
+                el.addEventListener('drop', dropHandler, false);
+                el.addEventListener('dragend', dragEndHandler, false);
                 el.removeAttribute('dragUnset');
             });
         },
