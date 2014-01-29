@@ -427,53 +427,57 @@ th {
     overflow:auto;
 }
 
-ul {
-    border-radius:5px;
+.colWrapper {
     border:1px solid #000;
-    border-bottom:none;
-    list-style:none;
-    padding:0;
     width:250px;
     float:left;
-    margin:0 10px;
+    margin:0 15px 0 0;
 }
 
-ul li {
-    border-bottom:1px solid #000;
-    padding:8px 5px;
-    cursor:move;
-    position:relative;
-    z-index:10;
+.colWrapper header {
+    border-bottom: 1px solid #000;
+    background:#dbcece;
+    padding:10px;
 }
 
-ul .head .addItem {
-    margin:-16px 0 0 0;
+.colWrapper header .addItem {
     float:right;
-    font-size:46px;
+    font-size:60px;
     font-weight:bold;
+    margin-top:-28px;
     cursor:pointer;
     height:auto;
     width:auto;
 }
 
-ul li:hover, ul .active {
+ul {
+    list-style:none;
+    padding:0;
+    width:230px;
+    margin:10px;
+}
+
+ul li {
+    border:1px solid #000;
+    padding:8px 5px;
+    border-radius:5px;
+}
+
+ul .item:hover, ul .active {
     background:#f3f3f3;
 }
 
-ul li:last-child {
-    border-radius:0 0 5px 5px;
-    border:none;
-    border-bottom:1px solid #000;
+ul .item {
+    cursor:move;
 }
 
-ul li.head, ul .head:hover {
-    cursor:default;
-    background:#fff;
-    border-radius:5px 5px 0 0;
+ul .slot {
+    border:none;
 }
 
 ul li h3 {
     text-align:center;
+    margin:5px 0;
     pointer-events:none;
 }
 
@@ -502,4 +506,8 @@ ul li input {
 
 [dragging] {
     opacity:0.6;
+}
+
+ul li input {
+    width:210px;
 }

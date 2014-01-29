@@ -9,7 +9,7 @@
             });
             //add the add item functionality
             $('.addItem').click(function () {
-                that.addItem($(this).parents('ul'));
+                that.addItem($(this).parents().siblings('ul'));
             });
             //init dragging code
             that.dragSet();
@@ -29,7 +29,7 @@
                 return false;
             //if it isn't active remove other columns after this one
             } else if ($(item).siblings().hasClass('active')) {
-                $('[data-colNum="' + itemColumn + '"] ~ ul').remove();
+                $(item).parents('section').nextAll().remove();
             }
             //remove active class from all siblings
             $(item).siblings().removeClass('active');
@@ -52,18 +52,22 @@
             //set new column number to current column + 1
             var newCol = +column + 1;
             var that = this;
+            //Create and append new container
+            var newColContainer = $('<section class="colWrapper"></section>');
+            newColContainer.appendTo('.nestableWrapper');
+            //add header to this column
+            $('<header>' +
+                '<span class="sectionTitle">Modules</span>' +
+                '<div class="addItem">+</div>' +
+                '</header>'
+            ).appendTo(newColContainer);
             //create column add attributes
             $('<ul/>', {
                     'class': 'column',
                     'data-colNum': newCol,
                     'data-ancestry': ancestry
-            }).appendTo('.nestableWrapper');
+            }).appendTo(newColContainer);
             var thisColumn = $('[data-colNum="' + newCol + '"]');
-            //add header to this column
-            $('<li class="head">' +
-                '<span id="sectionTitle">Modules</span>' +
-                '<div class="addItem">+</div>' +
-                '</li>').appendTo(thisColumn);
             //get clicked item children and build list items from them
             for (var i in item.children) {
                 var title = item.children[i].title;
@@ -71,7 +75,9 @@
                 var ancestry = item.children[i].ancestry;
                 $('<li class="item" data-id="' + id + '">' +
                     '<h3>' + title + '</h3>' +
-                '</li>').appendTo('[data-colNum="' + newCol + '"]');
+                    '</li>' +
+                    '<li class="slot"></li>'
+                ).appendTo(thisColumn);
             }
             //add select method to all new items
             //add add item method to new column
@@ -79,8 +85,8 @@
             thisColumnItems.click(function () {
                 that.select(this);
             });
-            thisColumn.find('.addItem').click(function () {
-                that.addItem($(this).parents('ul'));
+            newColContainer.find('.addItem').click(function () {
+                that.addItem($(this).parents().siblings('ul'));
             });
         },
         //method to add new item
@@ -108,6 +114,8 @@
                         $(this).remove();
                     }
                 });
+            //append new spacer
+            $('<li class="slot"></li>').appendTo(el);
         },
         dragSet : function () {
             var dragUnset = document.querySelectorAll('[dragUnset]');
