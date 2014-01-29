@@ -458,12 +458,15 @@ ul {
 ul li {
     border:1px solid #000;
     padding:8px 5px;
-    cursor:move;
     border-radius:5px;
 }
 
-ul li:hover, ul .active {
+ul .item:hover, ul .active {
     background:#f3f3f3;
+}
+
+ul .item {
+    cursor:move;
 }
 
 ul .slot {
