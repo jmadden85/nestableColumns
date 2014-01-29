@@ -111,8 +111,6 @@
         },
         dragSet : function () {
             var dragUnset = document.querySelectorAll('[dragUnset]');
-            var maskHeight = document.querySelector('.item').scrollHeight;
-            var maskWidth = document.querySelector('.item').scrollWidth;
             var dragSrcEl = null;
             //Drag start handler
             var dragStartHandler = function (e) {
