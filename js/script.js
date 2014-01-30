@@ -87,6 +87,12 @@
             this.showChildContainer(newParent, itemColumn, thisItemTitle, newAncestry);
         },
         //method to show new container
+        newShowChildContainer: function (info) {
+            var that = this;
+            var thisIndex = info.index;
+            var thisNode = info.node;
+            var thisTitle = info.title;
+        },
         showChildContainer : function (item, column, title, ancestry) {
             //set new column number to current column + 1
             var newCol = +column + 1;
