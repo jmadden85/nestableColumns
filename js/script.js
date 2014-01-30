@@ -3,16 +3,23 @@
         init : function () {
             //store this as that
             var that = this;
+
             //Set click event on all items
             $('.item').click(function () {
                 that.select(this);
             });
+
             //add the add item functionality
             $('.addItem').click(function () {
                 that.addItem($(this).parents().siblings('ul'));
             });
+
             //init dragging code
             that.dragSet();
+        },
+        //method to build initial view
+        buildFirstView : function (curriculum) {
+            
         },
         //method for selecting an element
         select : function (item) {
@@ -27,14 +34,18 @@
             //if it is do nothing
             if ($(item).hasClass('active') || !thisItemTitle) {
                 return false;
+
             //if it isn't active remove other columns after this one
             } else if ($(item).siblings().hasClass('active')) {
                 $(item).parents('section').nextAll().remove();
             }
+
             //remove active class from all siblings
             $(item).siblings().removeClass('active');
+
             //add active class to this item
             $(item).addClass('active');
+
             //Check if this is the root column
             //if not add to the ancestry
             //else make this ancestry equal to clicked item
@@ -44,6 +55,7 @@
                 newAncestry = thisId;
             }
             newParent = that.getAncestry(newAncestry);
+
             //display next container
             this.showChildContainer(newParent, itemColumn, thisItemTitle, newAncestry);
         },
@@ -52,15 +64,18 @@
             //set new column number to current column + 1
             var newCol = +column + 1;
             var that = this;
+
             //Create and append new container
             var newColContainer = $('<section class="colWrapper"></section>');
             newColContainer.appendTo('.nestableWrapper');
+
             //add header to this column
             $('<header>' +
                 '<span class="sectionTitle">Modules</span>' +
                 '<div class="addItem">+</div>' +
                 '</header>'
             ).appendTo(newColContainer);
+
             //create column add attributes
             $('<ul/>', {
                     'class': 'column',
@@ -68,6 +83,7 @@
                     'data-ancestry': ancestry
             }).appendTo(newColContainer);
             var thisColumn = $('[data-colNum="' + newCol + '"]');
+
             //get clicked item children and build list items from them
             for (var i in item.children) {
                 var title = item.children[i].title;
@@ -79,12 +95,14 @@
                     '<li class="slot"></li>'
                 ).appendTo(thisColumn);
             }
+
             //add select method to all new items
             //add add item method to new column
             var thisColumnItems = thisColumn.find('.item');
             thisColumnItems.click(function () {
                 that.select(this);
             });
+
             newColContainer.find('.addItem').click(function () {
                 that.addItem($(this).parents().siblings('ul'));
             });
@@ -93,8 +111,10 @@
         addItem : function (el) {
             var that = this;
             var curr = that.curriculum;
+
             //increment next node by 1
             curr.nextNode++;
+
             //append the new item
             $('<li><input type="text" draggable="true"></li>')
                 .addClass('item')
@@ -114,19 +134,24 @@
                         $(this).remove();
                     }
                 });
+
             //append new spacer
             $('<li class="slot"></li>').appendTo(el);
         },
         dragSet : function () {
-            var dragUnset = document.querySelectorAll('[dragUnset]');
+            var dragUnset = document.querySelectorAll('[dragUnsetItem]');
+            var dragUnsetSlot = document.querySelectorAll('[dragUnsetSlot]');
             var dragSrcEl = null;
+
             //Drag start handler
             var dragStartHandler = function (e) {
                 this.setAttribute('dragging', true);
                 dragSrcEl = this;
+                console.log(dragSrcEl);
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/html', this.innerHTML);
             };
+
             //Drag over handler
             var dragOverHandler = function (e) {
                 if (e.preventDefault) {
@@ -137,23 +162,37 @@
 
                 return false;
             };
+
             //Drag enter handler
             var dragEnterHandler = function (e) {
                 if (this.getAttribute('dragging')) {
                     return false;
                 }
 
-                this.querySelector('h3').classList.add('over');
+                if (this.querySelector('h3')) {
+                    this.querySelector('h3').classList.add('over');
+                } else {
+                    this.classList.add('over');
+                }
             };
+
             //Drag leave handler
             var dragLeaveHandler = function (e) {
-                this.children[0].classList.remove('over');
+                if (this.querySelector('h3')) {
+                    this.querySelector('h3').classList.remove('over');
+                } else {
+                    this.classList.remove('over');
+                }
             };
+
             //Drag end handler
             var dragEndHandler = function (e) {
-                document.querySelector('.over').classList.remove('over');
+                if (document.querySelector('.over')) {
+                    document.querySelector('.over').classList.remove('over');
+                }
                 document.querySelector('[dragging]').removeAttribute('dragging');
             };
+
             //drop handler
             var dropHandler = function (e) {
                 if (e.stopPropagation) {
@@ -175,7 +214,14 @@
                 el.addEventListener('dragleave', dragLeaveHandler, false);
                 el.addEventListener('drop', dropHandler, false);
                 el.addEventListener('dragend', dragEndHandler, false);
-                el.removeAttribute('dragUnset');
+                el.removeAttribute('dragUnsetItem');
+            });
+            [].forEach.call(dragUnsetSlot, function (el) {
+                el.addEventListener('dragenter', dragEnterHandler, false);
+                el.addEventListener('dragover', dragOverHandler, false);
+                el.addEventListener('dragleave', dragLeaveHandler, false);
+                el.addEventListener('drop', dropHandler, false);
+                el.removeAttribute('dragUnsetSlot');
             });
         },
         //get ancestors of clicked item based on this ancestry
@@ -184,6 +230,7 @@
             var curr = that.curriculum;
             var ancestorArray = ancestry.split('.');
             var thisItem = curr;
+
             //loop through ancestry array
             for (var i = 0, l = ancestorArray.length; i < l; i++) {
                 if (!thisItem[ancestorArray[i]]) {
@@ -275,6 +322,256 @@
                     }
                 }
             }
+        },
+        newCurriculum : {
+            "nid":"210",
+            "label":"Demo Curriculum",
+            "children":[
+                {
+                    "nid":"211",
+                    "label":"Modules",
+                    "children":[
+                        {
+                            "nid":"212",
+                            "label":"Module 1",
+                            "children":[
+                                {
+                                    "nid":"213",
+                                    "label":"Section 1",
+                                    "children":[
+                                        {
+                                            "nid":"214",
+                                            "label":"First Video"
+                                        },
+                                        {
+                                            "nid":"215",
+                                            "label":"First Audio"
+                                        },
+                                        {
+                                            "nid":"216",
+                                            "label":"Hello World!"
+                                        },
+                                        {
+                                            "nid":"482",
+                                            "label":"Welcome"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "nid":"218",
+                                    "label":"Section 2",
+                                    "children":[
+                                        {
+                                            "nid":"220",
+                                            "label":"Second Video"
+                                        },
+                                        {
+                                            "nid":"221",
+                                            "label":"Second Hello World!"
+                                        },
+                                        {
+                                            "nid":"225",
+                                            "label":"Third Audio"
+                                        },
+                                        {
+                                            "nid":"330",
+                                            "label":"Quiz #1"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "nid":"222",
+                                    "label":"Orphan Video"
+                                },
+                                {
+                                    "nid":"223",
+                                    "label":"Orphan Audio"
+                                },
+                                {
+                                    "nid":"224",
+                                    "label":"Section 3",
+                                    "children":[
+                                        {
+                                            "nid":"219",
+                                            "label":"Second Audio"
+                                        },
+                                        {
+                                            "nid":"226",
+                                            "label":"Third Hello World!"
+                                        },
+                                        {
+                                            "nid":"227",
+                                            "label":"Third Video"
+                                        },
+                                        {
+                                            "nid":"329",
+                                            "label":"First PDF Thing"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "nid":"410",
+                                    "label":"Last Discussion"
+                                },
+                                {
+                                    "nid":"413",
+                                    "label":"Another PDF"
+                                },
+                                {
+                                    "nid":"452",
+                                    "label":"Take a Photo"
+                                }
+                            ]
+                        },
+                        {
+                            "nid":"331",
+                            "label":"Module 2",
+                            "children":[
+                                {
+                                    "nid":"332",
+                                    "label":"Second Checklist"
+                                },
+                                {
+                                    "nid":"348",
+                                    "label":"Media Length"
+                                },
+                                {
+                                    "nid":"407",
+                                    "label":"Vid with media lenght"
+                                },
+                                {
+                                    "nid":"408",
+                                    "label":"One more PDF"
+                                },
+                                {
+                                    "nid":"447",
+                                    "label":"Test Audio - meditation break"
+                                },
+                                {
+                                    "nid":"469",
+                                    "label":"fulfillment ACT"
+                                }
+                            ]
+                        },
+                        {
+                            "nid":"453",
+                            "label":"Test 1"
+                        },
+                        {
+                            "nid":"466",
+                            "label":"First ACT"
+                        },
+                        {
+                            "nid":"483",
+                            "label":"Module 4",
+                            "children":[
+                                {
+                                    "nid":"484",
+                                    "label":"Welcome Video"
+                                }
+                            ]
+                        },
+                        {
+                            "nid":"487",
+                            "label":"Module 3",
+                            "children":[
+                                {
+                                    "nid":"488",
+                                    "label":"Welcome ",
+                                    "children":[
+                                        {
+                                            "nid":"491",
+                                            "label":"Welcome"
+                                        },
+                                        {
+                                            "nid":"493",
+                                            "label":"Welcome slides"
+                                        },
+                                        {
+                                            "nid":"494",
+                                            "label":"Keynote"
+                                        },
+                                        {
+                                            "nid":"495",
+                                            "label":"Keynote slides"
+                                        },
+                                        {
+                                            "nid":"496",
+                                            "label":"Mission"
+                                        },
+                                        {
+                                            "nid":"497",
+                                            "label":"Mission slides"
+                                        },
+                                        {
+                                            "nid":"498",
+                                            "label":"IIN Mission Statement"
+                                        },
+                                        {
+                                            "nid":"499",
+                                            "label":"The Color Red and Spirals"
+                                        },
+                                        {
+                                            "nid":"500",
+                                            "label":"The Color Red and Spirals Slides"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "nid":"489",
+                                    "label":"Curriculum Overview",
+                                    "children":[
+                                        {
+                                            "nid":"501",
+                                            "label":"Curriculum overview "
+                                        },
+                                        {
+                                            "nid":"503",
+                                            "label":"The Golden Path"
+                                        },
+                                        {
+                                            "nid":"504",
+                                            "label":"The Golden Path Step 1"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "nid":"606",
+                            "label":"Test"
+                        }
+                    ]
+                },
+                {
+                    "nid":"349",
+                    "label":"Health History"
+                },
+                {
+                    "nid":"420",
+                    "label":"CC",
+                    "children":[
+                        {
+                            "nid":"470",
+                            "label":"CC Container",
+                            "children":[
+                                {
+                                    "nid":"421",
+                                    "label":"Marc - Test CC"
+                                },
+                                {
+                                    "nid":"467",
+                                    "label":"Second ACT"
+                                },
+                                {
+                                    "nid":"468",
+                                    "label":"Third ACT"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         }
     };
 
