@@ -32,8 +32,9 @@
                         .attr('dragUnsetItem', true)
                         .append(
                         $('<h3>' + value.label + '</h3>')
-                        .attr('data-nid', value.nid)
-                    )
+                            .attr('data-nid', value.nid)
+                            .attr('data-index', index)
+                        )
                 ).add($('<li class="slot"></li>')
                     .attr('dragUnsetSlot', true)
                 );
@@ -44,13 +45,15 @@
         //method for selecting an element
         select : function (item) {
             var that = this;
-            var thisId = $(item).attr('data-id');
+            var thisId = $(item).find('h3').attr('data-nid');
+            var thisIndex = $(item).find('h3').attr('data-index');
             var itemColumn = $(item).parent().attr('data-colNum');
             var thisItemTitle = $(item).children('h3').html();
             var newAncestry = $(item).parent().attr('data-ancestry');
             var newParent;
 
             //check if this item is active
+            //or if this isn't an item (no h3)
             //if it is do nothing
             if ($(item).hasClass('active') || !thisItemTitle) {
                 return false;
@@ -70,12 +73,16 @@
             //if not add to the ancestry
             //else make this ancestry equal to clicked item
             if (newAncestry !== 'root') {
-                newAncestry += '.' + thisId;
+                newAncestry += '.' + thisIndex;
             } else {
-                newAncestry = thisId;
+                newAncestry = thisIndex;
             }
             newParent = that.getAncestry(newAncestry);
-
+            newFamily = that.getFamily({
+                index: newAncestry,
+                nid: thisId
+            });
+            console.log(newFamily);
             //display next container
             this.showChildContainer(newParent, itemColumn, thisItemTitle, newAncestry);
         },
@@ -247,6 +254,23 @@
             });
         },
         //get ancestors of clicked item based on this ancestry
+        getFamily: function (info) {
+            var that = this;
+            var indexArray = info.index.split('.');
+            var id = info.nid;
+            var curr = that.newCurriculum;
+            var thisItem = curr;
+            //loop through ancestry array
+            for (var i = 0, l = indexArray.length; i < l; i++) {
+                if (!thisItem.children[indexArray[i]]) {
+                    thisItem.children.push(
+                        {}
+                    );
+                }
+                thisItem = thisItem.children[indexArray[i]];
+            }
+            return thisItem;
+        },
         getAncestry : function (ancestry) {
             var that = this;
             var curr = that.curriculum;
