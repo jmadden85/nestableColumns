@@ -3,7 +3,8 @@
         init : function () {
             //store this as that
             var that = this;
-
+            //Build first view
+            that.buildFirstView(that.newCurriculum);
             //Set click event on all items
             $('.item').click(function () {
                 that.select(this);
@@ -19,7 +20,26 @@
         },
         //method to build initial view
         buildFirstView : function (curriculum) {
-            
+            //base class array
+            var mainColumn = $('#mainCol');
+            var baseClasses = curriculum.children;
+            var baseClassLabels = $();
+            //Build the main nav items
+            $.each(baseClasses, function (index, value) {
+                baseClassLabels = baseClassLabels.add(
+                    $('<li class="item"></li>')
+                        .attr('draggable', true)
+                        .attr('dragUnsetItem', true)
+                        .append(
+                        $('<h3>' + value.label + '</h3>')
+                        .attr('data-nid', value.nid)
+                    )
+                ).add($('<li class="slot"></li>')
+                    .attr('dragUnsetSlot', true)
+                );
+            });
+            //Append them to the first column
+            mainColumn.append(baseClassLabels);
         },
         //method for selecting an element
         select : function (item) {
@@ -203,6 +223,8 @@
                     // Set the source column's HTML to the HTML of the column we dropped on.
                     dragSrcEl.innerHTML = this.innerHTML;
                     this.innerHTML = e.dataTransfer.getData('text/html');
+                    //remove unneccessary meta tag
+                    this.querySelector('meta').remove();
                 }
 
                 return false;
