@@ -3,6 +3,7 @@
         init : function () {
             //store this as that
             var that = this;
+            console.log(that.newCurriculum);
             //Build first view
             that.buildFirstView(that.newCurriculum);
             //Set click event on all items
@@ -12,7 +13,7 @@
 
             //add the add item functionality
             $('.addItem').click(function () {
-                that.addItem($(this).parents().siblings('ul'));
+                that.addItem($(this).siblings('ul'));
             });
 
             //init dragging code
@@ -47,10 +48,8 @@
             var that = this;
             var thisId = $(item).find('h3').attr('data-nid');
             var thisIndex = $(item).find('h3').attr('data-index');
-            var itemColumn = $(item).parent().attr('data-colNum');
             var thisItemTitle = $(item).children('h3').html();
-            var newAncestry = $(item).parent().attr('data-ancestry');
-            var newParent;
+            var thisAncestry = $(item).parent().attr('data-ancestry');
 
             //check if this item is active
             //or if this isn't an item (no h3)
@@ -72,31 +71,27 @@
             //Check if this is the root column
             //if not add to the ancestry
             //else make this ancestry equal to clicked item
-            if (newAncestry !== 'root') {
-                newAncestry += '.' + thisIndex;
+            if (thisAncestry !== 'root') {
+                thisAncestry += '.' + thisIndex;
             } else {
-                newAncestry = thisIndex;
+                thisAncestry = thisIndex;
             }
-            newParent = that.getAncestry(newAncestry);
+
             newFamily = that.getFamily({
-                index: newAncestry,
-                nid: thisId
+                index: thisAncestry,
+                nid: thisId,
+                title: thisItemTitle
             });
-            console.log(newFamily);
             //display next container
-            this.showChildContainer(newParent, itemColumn, thisItemTitle, newAncestry);
+            console.log(newFamily);
+            this.showChildContainer(newFamily, thisAncestry, thisItemTitle);
         },
         //method to show new container
-        newShowChildContainer: function (info) {
+        showChildContainer: function (family, ancestry, title) {
             var that = this;
-            var thisIndex = info.index;
-            var thisNode = info.node;
-            var thisTitle = info.title;
-        },
-        showChildContainer : function (item, column, title, ancestry) {
-            //set new column number to current column + 1
-            var newCol = +column + 1;
-            var that = this;
+            var thisNode = family.nid;
+            var thisTitle = title;
+            var thisChildren = family.children;
 
             //Create and append new container
             var newColContainer = $('<section class="colWrapper"></section>');
@@ -104,28 +99,27 @@
 
             //add header to this column
             $('<header>' +
-                '<span class="sectionTitle">Modules</span>' +
+                '<span class="sectionTitle">' + thisTitle + '</span>' +
                 '<div class="addItem">+</div>' +
                 '</header>'
             ).appendTo(newColContainer);
 
             //create column add attributes
             $('<ul/>', {
-                    'class': 'column',
-                    'data-colNum': newCol,
-                    'data-ancestry': ancestry
+                'class': 'column',
+                'data-ancestry': ancestry
             }).appendTo(newColContainer);
-            var thisColumn = $('[data-colNum="' + newCol + '"]');
+            var thisColumn = newColContainer.children('ul');
 
             //get clicked item children and build list items from them
-            for (var i in item.children) {
-                var title = item.children[i].title;
-                var id = item.children[i].id;
-                var ancestry = item.children[i].ancestry;
-                $('<li class="item" data-id="' + id + '">' +
-                    '<h3>' + title + '</h3>' +
+            for (var i in thisChildren) {
+                var title = thisChildren[i].label;
+                var id = thisChildren[i].nid;
+                var index = i;
+                $('<li class="item" draggable="true" dragUnsetItem="true">' +
+                    '<h3 data-nid="' + id + '" data-index="' + index + '">' + title + '</h3>' +
                     '</li>' +
-                    '<li class="slot"></li>'
+                    '<li class="slot" dragUnsetSlot="true"></li>'
                 ).appendTo(thisColumn);
             }
 
@@ -139,19 +133,17 @@
             newColContainer.find('.addItem').click(function () {
                 that.addItem($(this).parents().siblings('ul'));
             });
+
+            that.dragSet();
+
         },
         //method to add new item
         addItem : function (el) {
             var that = this;
-            var curr = that.curriculum;
-
-            //increment next node by 1
-            curr.nextNode++;
 
             //append the new item
-            $('<li><input type="text" draggable="true"></li>')
+            $('<li draggable="true" dragUnsetItem="true"><input type="text"></li>')
                 .addClass('item')
-                .attr('data-id', curr.nextNode)
                 .on({
                     click: function (event) {
                         that.select(this);
@@ -163,13 +155,31 @@
                     .focus()
                     .keyup(function (event) {
                     if (event.keyCode === 13) {
-                        $('<h3>' + $(this).val() + '</h3>').appendTo($(this).parent());
+                        //Append new h3 need to set up index still
+                        $('<h3 data-nid="null" data-index="' + $(this).parent().index() / 2 + '">' + $(this).val() + '</h3>').appendTo($(this).parent());
+                        
                         $(this).remove();
                     }
-                });
+                }
+            );
 
             //append new spacer
-            $('<li class="slot"></li>').appendTo(el);
+            $('<li class="slot" dragUnsetSlot="true"></li>').appendTo(el);
+
+            //Check if this is the root column
+            //if not add to the ancestry
+            //else make this ancestry equal to clicked item
+            var newIndex = (el.children().last().index() - 1) / 2;
+            if (el.attr('data-ancestry') !== 'root') {
+                //Add this to the object for tracking purposes
+                that.getFamily({
+                    index: el.attr('data-ancestry') + '.' + newIndex,
+                    nid: null,
+                    title: ' '
+                });
+            }
+
+            that.dragSet();
         },
         dragSet : function () {
             var dragUnset = document.querySelectorAll('[dragUnsetItem]');
@@ -264,116 +274,27 @@
             var that = this;
             var indexArray = info.index.split('.');
             var id = info.nid;
-            var curr = that.newCurriculum;
-            var thisItem = curr;
+            var label = info.title;
+            var thisItem = that.newCurriculum;
+
+            console.log(info);
             //loop through ancestry array
             for (var i = 0, l = indexArray.length; i < l; i++) {
+                if (!thisItem.children) {
+                    thisItem.children = [];
+                }
                 if (!thisItem.children[indexArray[i]]) {
                     thisItem.children.push(
-                        {}
+                        {
+                            children: [],
+                            label: label,
+                            nid: null
+                        }
                     );
                 }
                 thisItem = thisItem.children[indexArray[i]];
             }
             return thisItem;
-        },
-        getAncestry : function (ancestry) {
-            var that = this;
-            var curr = that.curriculum;
-            var ancestorArray = ancestry.split('.');
-            var thisItem = curr;
-
-            //loop through ancestry array
-            for (var i = 0, l = ancestorArray.length; i < l; i++) {
-                if (!thisItem[ancestorArray[i]]) {
-                    thisItem[ancestorArray[i]] = {};
-                }
-                thisItem = thisItem[ancestorArray[i]];
-            }
-            return thisItem;
-        },
-        curriculum : {
-            nextNode : 15,
-            1 : {
-                children : {
-                    6 : {
-                        title : 'testing',
-                        id : 6,
-                        ancestry : '1',
-                        children : {}
-                    },
-                    7 : {
-                        title : 'abcdefg',
-                        id : 7,
-                        ancestry : '1',
-                        children : {}
-                    }
-                }
-            },
-            2 : {
-                children : {
-                    8 : {
-                        title : 'arggg',
-                        id : 8,
-                        ancestry : '2',
-                        children : {}
-                    },
-                    9 : {
-                        title : 'garggg',
-                        id : 9,
-                        ancestry : '2',
-                        children : {}
-                    }
-                }
-            },
-            3 : {
-                children : {
-                    10 : {
-                        title : 'adsfaewf',
-                        id : 10,
-                        ancestry : '3',
-                        children : {}
-                    },
-                    11 : {
-                        title : '233233',
-                        id : 11,
-                        ancestry : '3',
-                        children : {}
-                    }
-                }
-            },
-            4 : {
-                children : {
-                    12 : {
-                        title : '222',
-                        id : 12,
-                        ancestry : '4',
-                        children : {}
-                    },
-                    13 : {
-                        title : 'ddd',
-                        id : 13,
-                        ancestry : '4',
-                        children : {}
-                    }
-                }
-            },
-            5 : {
-                children : {
-                    14 : {
-                        title : 'abc',
-                        id : 14,
-                        ancestry : '5',
-                        children : {}
-                    },
-                    15 : {
-                        title : '453',
-                        id : 15,
-                        ancestry : '5',
-                        children : {}
-                    }
-                }
-            }
         },
         newCurriculum : {
             "nid":"210",
