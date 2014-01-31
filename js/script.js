@@ -1,9 +1,9 @@
+'use strict';
 (function () {
     var nestedColumns = {
         init : function () {
             //store this as that
             var that = this;
-            console.log(that.newCurriculum);
             //Build first view
             that.buildFirstView(that.newCurriculum);
             //Set click event on all items
@@ -50,6 +50,7 @@
             var thisIndex = $(item).find('h3').attr('data-index');
             var thisItemTitle = $(item).children('h3').html();
             var thisAncestry = $(item).parent().attr('data-ancestry');
+            var newFamily;
 
             //check if this item is active
             //or if this isn't an item (no h3)
@@ -83,7 +84,6 @@
                 title: thisItemTitle
             });
             //display next container
-            console.log(newFamily);
             this.showChildContainer(newFamily, thisAncestry, thisItemTitle);
         },
         //method to show new container
@@ -155,9 +155,19 @@
                     .focus()
                     .keyup(function (event) {
                     if (event.keyCode === 13) {
-                        //Append new h3 need to set up index still
                         $('<h3 data-nid="null" data-index="' + $(this).parent().index() / 2 + '">' + $(this).val() + '</h3>').appendTo($(this).parent());
-                        
+                        var thisAncestry;
+                        if ($(this).parents('ul').attr('data-ancestry') === 'root') {
+                            thisAncestry = $(this).parent().index() / 2;
+                        } else {
+                            thisAncestry = $(this).parents('ul').attr('data-ancestry') + '.' + $(this).parent().index() / 2;
+                        }
+                        that.getFamily({
+                            index: thisAncestry.toString(),
+                            title: $(this).val(),
+                            id : null,
+                            update: true
+                        });
                         $(this).remove();
                     }
                 }
@@ -175,7 +185,13 @@
                 that.getFamily({
                     index: el.attr('data-ancestry') + '.' + newIndex,
                     nid: null,
-                    title: ' '
+                    title: null
+                });
+            } else {
+                that.getFamily({
+                    index: newIndex.toString(),
+                    nid: null,
+                    title: null
                 });
             }
 
@@ -190,7 +206,6 @@
             var dragStartHandler = function (e) {
                 this.setAttribute('dragging', true);
                 dragSrcEl = this;
-                console.log(dragSrcEl);
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/html', this.innerHTML);
             };
@@ -276,8 +291,8 @@
             var id = info.nid;
             var label = info.title;
             var thisItem = that.newCurriculum;
+            var update = info.update || false;
 
-            console.log(info);
             //loop through ancestry array
             for (var i = 0, l = indexArray.length; i < l; i++) {
                 if (!thisItem.children) {
@@ -293,6 +308,13 @@
                     );
                 }
                 thisItem = thisItem.children[indexArray[i]];
+            }
+            console.log(info);
+            console.log(thisItem);
+
+            if (update) {
+                thisItem.label = label;
+                thisItem.nid = id;
             }
             return thisItem;
         },
