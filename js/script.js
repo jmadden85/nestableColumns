@@ -309,8 +309,6 @@
                 }
                 thisItem = thisItem.children[indexArray[i]];
             }
-            console.log(info);
-            console.log(thisItem);
 
             if (update) {
                 thisItem.label = label;
