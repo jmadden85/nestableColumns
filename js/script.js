@@ -1,6 +1,9 @@
 'use strict';
 (function () {
     var nestedColumns = {
+        dragSrc : {
+
+        },
         init : function () {
             //store this as that
             var that = this;
@@ -201,11 +204,38 @@
             var dragUnset = document.querySelectorAll('[dragUnsetItem]');
             var dragUnsetSlot = document.querySelectorAll('[dragUnsetSlot]');
             var dragSrcEl = null;
+            var that = this;
+
+            //function to build info of d & d items
+            var dragInfo = function (el) {
+                var h3 = el.querySelector('h3');
+                var parent = el.parentNode;
+                var id = h3.getAttribute('data-nid');
+                var index = h3.getAttribute('data-index');
+                var title = h3.innerHTML;
+                var parentAncestry = parent.getAttribute('data-ancestry');
+                var elInfo;
+                if (parentAncestry !== 'root') {
+                    elInfo = that.getFamily({
+                        nid: id,
+                        label: title,
+                        index: parentAncestry + '.' + index
+                    });
+                } else {
+                    elInfo = that.getFamily({
+                        nid: id,
+                        label: title,
+                        index: index
+                    });
+                }
+                console.log(elInfo);
+            };
 
             //Drag start handler
             var dragStartHandler = function (e) {
                 this.setAttribute('dragging', true);
-                dragSrcEl = this;
+                dragInfo(this);
+                that.dragSrc = this;
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/html', this.innerHTML);
             };
@@ -236,6 +266,7 @@
 
             //Drag leave handler
             var dragLeaveHandler = function (e) {
+                console.log('leave', dragSrcEl, that.dragSrc);
                 if (this.querySelector('h3')) {
                     this.querySelector('h3').classList.remove('over');
                 } else {
@@ -256,10 +287,10 @@
                 if (e.stopPropagation) {
                     e.stopPropagation();
                 }
-
-                if (dragSrcEl !== this) {
+                console.log(this.innerHTML, e.dataTransfer.getData('text/html'));
+                if (that.dragSrc !== this) {
                     // Set the source column's HTML to the HTML of the column we dropped on.
-                    dragSrcEl.innerHTML = this.innerHTML;
+                    that.dragSrc.innerHTML = this.innerHTML;
                     this.innerHTML = e.dataTransfer.getData('text/html');
                     //remove unneccessary meta tag
                     this.querySelector('meta').remove();
