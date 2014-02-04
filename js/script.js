@@ -29,6 +29,7 @@
             var baseClasses = curriculum.children;
             var baseClassLabels = $();
             //Build the main nav items
+            $('<li class="slot" dragUnsetSlot="true"></li>').appendTo(mainColumn);
             $.each(baseClasses, function (index, value) {
                 baseClassLabels = baseClassLabels.add(
                     $('<li class="item"></li>')
@@ -93,7 +94,6 @@
         showChildContainer: function (family, ancestry, title) {
             var that = this;
             var thisNode = family.nid;
-            var thisTitle = title;
             var thisChildren = family.children;
 
             //Create and append new container
@@ -102,7 +102,7 @@
 
             //add header to this column
             $('<header>' +
-                '<span class="sectionTitle">' + thisTitle + '</span>' +
+                '<span class="sectionTitle">' + title + '</span>' +
                 '<div class="addItem">+</div>' +
                 '</header>'
             ).appendTo(newColContainer);
@@ -110,9 +110,13 @@
             //create column add attributes
             $('<ul/>', {
                 'class': 'column',
-                'data-ancestry': ancestry
+                'data-ancestry': ancestry,
+                'data-nid': thisNode
             }).appendTo(newColContainer);
             var thisColumn = newColContainer.children('ul');
+
+            //Add top slot item
+            $('<li class="slot" dragUnsetSlot="true"></li>').appendTo(thisColumn);
 
             //get clicked item children and build list items from them
             for (var i in thisChildren) {
@@ -158,12 +162,12 @@
                     .focus()
                     .keyup(function (event) {
                     if (event.keyCode === 13) {
-                        $('<h3 data-nid="null" data-index="' + $(this).parent().index() / 2 + '">' + $(this).val() + '</h3>').appendTo($(this).parent());
+                        $('<h3 data-nid="null" data-index="' + ($(this).parent().index() - 1) / 2 + '">' + $(this).val() + '</h3>').appendTo($(this).parent());
                         var thisAncestry;
                         if ($(this).parents('ul').attr('data-ancestry') === 'root') {
-                            thisAncestry = $(this).parent().index() / 2;
+                            thisAncestry = ($(this).parent().index() - 1) / 2;
                         } else {
-                            thisAncestry = $(this).parents('ul').attr('data-ancestry') + '.' + $(this).parent().index() / 2;
+                            thisAncestry = $(this).parents('ul').attr('data-ancestry') + '.' + ($(this).parent().index() - 1) / 2;
                         }
                         that.getFamily({
                             index: thisAncestry.toString(),
@@ -205,38 +209,44 @@
             var dragUnsetSlot = document.querySelectorAll('[dragUnsetSlot]');
             var dragSrcEl = null;
             var that = this;
+            var dragElInfo;
+            var dropElInfo;
 
             //function to build info of d & d items
-            var dragInfo = function (el) {
+            var dragInfo = function (el, action) {
                 var h3 = el.querySelector('h3');
                 var parent = el.parentNode;
                 var id = h3.getAttribute('data-nid');
                 var index = h3.getAttribute('data-index');
                 var title = h3.innerHTML;
                 var parentAncestry = parent.getAttribute('data-ancestry');
-                var elInfo;
-                if (parentAncestry !== 'root') {
-                    elInfo = that.getFamily({
+                var elInfo = [];
+                elInfo.push({
+                    weight: index
+                });
+                if (parentAncestry !== 'root' && action !== 'slot') {
+                    elInfo.push(that.getFamily({
                         nid: id,
                         label: title,
                         index: parentAncestry + '.' + index
-                    });
+                    }));
                 } else {
-                    elInfo = that.getFamily({
+                    elInfo.push(that.getFamily({
                         nid: id,
                         label: title,
                         index: index
-                    });
+                    }));
                 }
-                console.log(elInfo);
+                return elInfo;
             };
 
             //Drag start handler
             var dragStartHandler = function (e) {
                 this.setAttribute('dragging', true);
-                dragInfo(this);
                 that.dragSrc = this;
+                dragInfo(this, 'drag');
                 e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('json', JSON.stringify(dragInfo(this, 'drag')));
                 e.dataTransfer.setData('text/html', this.innerHTML);
             };
 
@@ -266,7 +276,6 @@
 
             //Drag leave handler
             var dragLeaveHandler = function (e) {
-                console.log('leave', dragSrcEl, that.dragSrc);
                 if (this.querySelector('h3')) {
                     this.querySelector('h3').classList.remove('over');
                 } else {
@@ -287,14 +296,38 @@
                 if (e.stopPropagation) {
                     e.stopPropagation();
                 }
-                console.log(this.innerHTML, e.dataTransfer.getData('text/html'));
-                if (that.dragSrc !== this) {
-                    // Set the source column's HTML to the HTML of the column we dropped on.
-                    that.dragSrc.innerHTML = this.innerHTML;
-                    this.innerHTML = e.dataTransfer.getData('text/html');
-                    //remove unneccessary meta tag
-                    this.querySelector('meta').remove();
+                //get the family of the element you are dropping
+                //and the family of the element you dropped it on
+                var droppedFamily = JSON.parse(e.dataTransfer.getData('json'));
+                var targetFamily;
+                //if you dropped it on an empty slot, get the family of the parent element
+                if (!this.childNodes.length) {
+                    targetFamily = that.getFamily({
+                        index: this.parentNode.getAttribute('data-ancestry'),
+                        id: this.parentNode.getAttribute('data-nid'),
+                        label: null
+                    });
+                    //Splice this new arrangement into the curriculum object
+                    var newWeight = $(this).index() / 2;
+                    that.spliceIn({
+                        spliceMe: targetFamily,
+                        injectMe: droppedFamily[1],
+                        newWeight: newWeight,
+                        oldWeight: droppedFamily[0].weight
+                    });
+                } else {
+                    targetFamily = dragInfo(this, 'drop');
                 }
+
+                console.log(targetFamily, droppedFamily);
+
+                //if (that.dragSrc !== this) {
+                    //Set the source column's HTML to the HTML of the column we dropped on.
+                    //that.dragSrc.innerHTML = this.innerHTML;
+                    //this.innerHTML = e.dataTransfer.getData('text/html');
+                    //remove unneccessary meta tag
+                    //this.querySelector('meta').remove();
+                //}
 
                 return false;
             };
@@ -314,6 +347,23 @@
                 el.addEventListener('drop', dropHandler, false);
                 el.removeAttribute('dragUnsetSlot');
             });
+        },
+        //Method to splice in items
+        spliceIn: function (options) {
+            var objectToSplice = options.spliceMe;
+            var objectToInject = options.injectMe;
+            var newWeight = options.newWeight;
+            var oldWeight = options.oldWeight;
+
+            //Splice the injected element into the object at it's new position
+            objectToSplice.children.splice(newWeight, 0, objectToInject);
+
+            //Remove the spliced in object
+            if (newWeight < oldWeight) {
+                objectToSplice.children.splice(oldWeight + 1, 1);
+            } else {
+                objectToSplice.children.splice(oldWeight, 1);
+            }
         },
         //get ancestors of clicked item based on this ancestry
         getFamily: function (info) {
