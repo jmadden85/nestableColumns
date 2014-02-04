@@ -354,13 +354,14 @@
             var objectToInject = options.injectMe;
             var newWeight = options.newWeight;
             var oldWeight = options.oldWeight;
-
+            console.log(options);
             //Splice the injected element into the object at it's new position
             objectToSplice.children.splice(newWeight, 0, objectToInject);
 
             //Remove the spliced in object
             if (newWeight < oldWeight) {
-                objectToSplice.children.splice(oldWeight + 1, 1);
+                oldWeight++;
+                objectToSplice.children.splice(oldWeight, 1);
             } else {
                 objectToSplice.children.splice(oldWeight, 1);
             }
@@ -374,21 +375,24 @@
             var thisItem = that.newCurriculum;
             var update = info.update || false;
 
-            //loop through ancestry array
-            for (var i = 0, l = indexArray.length; i < l; i++) {
-                if (!thisItem.children) {
-                    thisItem.children = [];
+            //if you need root family
+            if (info.index !== 'root') {
+                //loop through ancestry array
+                for (var i = 0, l = indexArray.length; i < l; i++) {
+                    if (!thisItem.children) {
+                        thisItem.children = [];
+                    }
+                    if (!thisItem.children[indexArray[i]]) {
+                        thisItem.children.push(
+                            {
+                                children: [],
+                                label: label,
+                                nid: null
+                            }
+                        );
+                    }
+                    thisItem = thisItem.children[indexArray[i]];
                 }
-                if (!thisItem.children[indexArray[i]]) {
-                    thisItem.children.push(
-                        {
-                            children: [],
-                            label: label,
-                            nid: null
-                        }
-                    );
-                }
-                thisItem = thisItem.children[indexArray[i]];
             }
 
             if (update) {
