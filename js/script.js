@@ -221,22 +221,29 @@
                 var title = h3.innerHTML;
                 var parentAncestry = parent.getAttribute('data-ancestry');
                 var elInfo = [];
+                //Give the current weight of the element
                 elInfo.push({
                     weight: index
                 });
+                //Get the elements family info
                 if (parentAncestry !== 'root' && action !== 'slot') {
                     elInfo.push(that.getFamily({
                         nid: id,
                         label: title,
                         index: parentAncestry + '.' + index
                     }));
+                    //Get the elements parents info
+                    elInfo.push(parentAncestry);
                 } else {
                     elInfo.push(that.getFamily({
                         nid: id,
                         label: title,
                         index: index
                     }));
+                    //Get the elements parents info
+                    elInfo.push(that.newCurriculum);
                 }
+
                 return elInfo;
             };
 
@@ -244,10 +251,10 @@
             var dragStartHandler = function (e) {
                 this.setAttribute('dragging', true);
                 that.dragSrc = this;
-                dragInfo(this, 'drag');
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('json', JSON.stringify(dragInfo(this, 'drag')));
                 e.dataTransfer.setData('text/html', this.innerHTML);
+                console.log(that.newCurriculum.children[0].children[0].label);
             };
 
             //Drag over handler
@@ -296,38 +303,51 @@
                 if (e.stopPropagation) {
                     e.stopPropagation();
                 }
-                //get the family of the element you are dropping
-                //and the family of the element you dropped it on
-                var droppedFamily = JSON.parse(e.dataTransfer.getData('json'));
-                var targetFamily;
-                //if you dropped it on an empty slot, get the family of the parent element
-                if (!this.childNodes.length) {
-                    targetFamily = that.getFamily({
-                        index: this.parentNode.getAttribute('data-ancestry'),
-                        id: this.parentNode.getAttribute('data-nid'),
+
+                //Don't fire on the same element
+                if (that.dragSrc !== this) {
+                    //get the family of the element you are dropping
+                    //and the family of the element you dropped it on
+                    var droppedFamily = JSON.parse(e.dataTransfer.getData('json'));
+                    var targetFamily;
+                    var deleteFrom = that.getFamily({
+                        index: droppedFamily[2],
+                        id: null,
                         label: null
                     });
-                    //Splice this new arrangement into the curriculum object
-                    var newWeight = $(this).index() / 2;
-                    that.spliceIn({
-                        spliceMe: targetFamily,
-                        injectMe: droppedFamily[1],
-                        newWeight: newWeight,
-                        oldWeight: droppedFamily[0].weight
-                    });
-                } else {
-                    targetFamily = dragInfo(this, 'drop');
+                    console.log(deleteFrom);
+                    //if you dropped it on an empty slot, get the family of the parent element
+                    if (!this.childNodes.length) {
+                        targetFamily = that.getFamily({
+                            index: this.parentNode.getAttribute('data-ancestry'),
+                            id: this.parentNode.getAttribute('data-nid'),
+                            label: null
+                        });
+                        //Splice this new arrangement into the curriculum object
+                        var newWeight = $(this).index() / 2;
+                        that.spliceIn({
+                            spliceMe: targetFamily,
+                            injectMe: droppedFamily[1],
+                            newWeight: newWeight,
+                            oldWeight: parseInt(droppedFamily[0].weight, 10)
+                        });
+                    } else {
+                        targetFamily = dragInfo(this, 'drop');
+                        if (!targetFamily[1].children) {
+                            targetFamily[1].children = [];
+                        }
+                        that.spliceIn({
+                            spliceMe: targetFamily[1],
+                            injectMe: droppedFamily[1],
+                            newWeight: targetFamily[1].children.length,
+                            oldWeight: parseInt(droppedFamily[0].weight, 10),
+                            deleteFrom: deleteFrom
+                        });
+                    }
+
+
                 }
-
-                console.log(targetFamily, droppedFamily);
-
-                //if (that.dragSrc !== this) {
-                    //Set the source column's HTML to the HTML of the column we dropped on.
-                    //that.dragSrc.innerHTML = this.innerHTML;
-                    //this.innerHTML = e.dataTransfer.getData('text/html');
-                    //remove unneccessary meta tag
-                    //this.querySelector('meta').remove();
-                //}
+                console.log(that.newCurriculum.children[0].children[0].label);
 
                 return false;
             };
@@ -354,12 +374,17 @@
             var objectToInject = options.injectMe;
             var newWeight = options.newWeight;
             var oldWeight = options.oldWeight;
-            console.log(options);
+            var deleteFrom = options.deleteFrom || null;
+            var that = this;
+
             //Splice the injected element into the object at it's new position
             objectToSplice.children.splice(newWeight, 0, objectToInject);
 
             //Remove the spliced in object
-            if (newWeight < oldWeight) {
+            if (deleteFrom) {
+                deleteFrom.children.splice(oldWeight, 1);
+            } else if (newWeight < oldWeight) {
+                //If the object was spliced in below it's new weight increment remove by 1
                 oldWeight++;
                 objectToSplice.children.splice(oldWeight, 1);
             } else {
