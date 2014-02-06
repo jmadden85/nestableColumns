@@ -5,7 +5,7 @@
 
         },
         dragRules : {
-            maxGenerations: 4
+            maxGenerations: 3
         },
         currChange : false,
         init : function () {
@@ -372,7 +372,15 @@
                             label: null
                         });
                         //check for legal move
-                        console.log(this);
+                        //get generation of target element
+                        var generation = this.parentNode.getAttribute('data-ancestry').split('.').length;
+                        //get generation count of dropped element
+                        var dropGen = droppedFamily[1].children.length;
+                        if (dropGen) {
+                            console.log(that.generationCount(droppedFamily[1].children));
+                        }
+
+                        console.log(generation, dropGen);
                         //Splice this new arrangement into the curriculum object
                         var newWeight = $(this).index() / 2;
                         that.spliceIn({
@@ -424,6 +432,30 @@
                 el.addEventListener('drop', dropHandler, false);
                 el.removeAttribute('dragUnsetSlot');
             });
+        },
+        //Method to count generations
+        generationCount: function (children) {
+            //start count at 1 for first generation
+            var count = 1;
+            var childrensChildren = [];
+            var counter = function (kids) {
+                childrensChildren = [];
+                //loop through children to look for more children
+                for (var c = 0, l = kids.length; c < l; c++) {
+                    if (kids[c].children) {
+                        if (kids[c].children.length) {
+                            childrensChildren.push(kids[c].children);
+                        }
+                    }
+                }
+                console.log(childrensChildren);
+                if (childrensChildren.length) {
+                    count++;
+                }
+                counter(childrensChildren);
+            };
+            counter(children);
+            return count;
         },
         //Method to reindex everything on change
         reIndex: function () {
