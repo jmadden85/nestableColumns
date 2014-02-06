@@ -29,6 +29,7 @@
             var mainColumn = $('#mainCol');
             var baseClasses = curriculum.children;
             var baseClassLabels = $();
+            mainColumn.attr('data-nid', curriculum.nid);
             //Build the main nav items
             $('<li class="slot" dragUnsetSlot="true"></li>').appendTo(mainColumn);
             $.each(baseClasses, function (index, value) {
@@ -252,6 +253,11 @@
             var dragStartHandler = function (e) {
                 this.setAttribute('dragging', true);
                 that.dragSrc = this;
+                //If the current object is active close all of it's children columns
+                if ($(this).hasClass('active')) {
+                    $(this).parents('section').nextAll().remove();
+                    $(this).removeClass('active');
+                }
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('json', JSON.stringify(dragInfo(this, 'drag')));
                 e.dataTransfer.setData('text/html', this.innerHTML);
@@ -296,21 +302,39 @@
                     document.querySelector('.over').classList.remove('over');
                 }
                 document.querySelector('[dragging]').removeAttribute('dragging');
-
+                console.log(that.currChange);
                 if (that.currChange) {
                     var removeMe = $(e.srcElement);
+                    var target;
                     if (that.currChange.method === 'slot') {
-                        var target = that.currChange.target;
-                        var targetEl = $('[data-nid="' + target + '"] .item')[that.currChange.newWeight];
+                        target = $('[data-nid="' + that.currChange.target + '"] .item');
+                        var targetEl;
+                        //remove slot before this item
                         removeMe.prev().remove();
-                        removeMe.insertBefore(targetEl);
-                        $('<li class="slot" dragUnsetSlot="true"></li>').insertBefore(targetEl);
+                        //if it's not the last element in the column
+                        if (that.currChange.newWeight !== target.length) {
+                            targetEl = target[that.currChange.newWeight];
+                            removeMe.insertBefore(targetEl);
+                            $('<li class="slot" dragUnsetSlot="true"></li>').insertBefore(targetEl);
+                        } else {
+                            targetEl = target[that.currChange.newWeight - 1];
+                            removeMe.insertAfter(targetEl);
+                            $('<li class="slot" dragUnsetSlot="true"></li>').insertAfter(targetEl);
+                        }
                     } else {
+                        target = $('section > [data-nid="' + that.currChange.target + '"]');
                         removeMe.prev().remove();
-                        removeMe.remove();
+                        //if the column you drop on is opened append it to the end, otherwise just reove it
+                        if (target.length) {
+                            removeMe.appendTo(target);
+                            $('<li class="slot" dragUnsetSlot="true"></li>').insertAfter(removeMe);
+                        } else {
+                            removeMe.remove();
+                        }
                     }
                     that.currChange = false;
                     that.reIndex();
+                    that.dragSet();
                 }
             };
 
@@ -369,7 +393,8 @@
                             deleteFrom: deleteFrom
                         });
                         that.currChange = {
-                            method: 'move'
+                            method: 'move',
+                            target: targetFamily[1].nid
                         };
                     }
                 }
