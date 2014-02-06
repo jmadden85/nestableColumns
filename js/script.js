@@ -4,6 +4,7 @@
         dragSrc : {
 
         },
+        currChange : false,
         init : function () {
             //store this as that
             var that = this;
@@ -32,17 +33,17 @@
             $('<li class="slot" dragUnsetSlot="true"></li>').appendTo(mainColumn);
             $.each(baseClasses, function (index, value) {
                 baseClassLabels = baseClassLabels.add(
-                    $('<li class="item"></li>')
-                        .attr('draggable', true)
-                        .attr('dragUnsetItem', true)
-                        .append(
-                        $('<h3>' + value.label + '</h3>')
-                            .attr('data-nid', value.nid)
-                            .attr('data-index', index)
-                        )
-                ).add($('<li class="slot"></li>')
-                    .attr('dragUnsetSlot', true)
-                );
+                        $('<li class="item"></li>')
+                            .attr('draggable', true)
+                            .attr('dragUnsetItem', true)
+                            .append(
+                                $('<h3>' + value.label + '</h3>')
+                                    .attr('data-nid', value.nid)
+                                    .attr('data-index', index)
+                            )
+                    ).add($('<li class="slot"></li>')
+                        .attr('dragUnsetSlot', true)
+                    );
             });
             //Append them to the first column
             mainColumn.append(baseClassLabels);
@@ -62,7 +63,7 @@
             if ($(item).hasClass('active') || !thisItemTitle) {
                 return false;
 
-            //if it isn't active remove other columns after this one
+                //if it isn't active remove other columns after this one
             } else if ($(item).siblings().hasClass('active')) {
                 $(item).parents('section').nextAll().remove();
             }
@@ -159,8 +160,8 @@
                 .appendTo(el)
                 //add focus to new input element and function to create new h3 when user hits enter
                 .children('input')
-                    .focus()
-                    .keyup(function (event) {
+                .focus()
+                .keyup(function (event) {
                     if (event.keyCode === 13) {
                         $('<h3 data-nid="null" data-index="' + ($(this).parent().index() - 1) / 2 + '">' + $(this).val() + '</h3>').appendTo($(this).parent());
                         var thisAncestry;
@@ -241,7 +242,7 @@
                         index: index
                     }));
                     //Get the elements parents info
-                    elInfo.push(that.newCurriculum);
+                    elInfo.push(parentAncestry);
                 }
 
                 return elInfo;
@@ -254,7 +255,6 @@
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('json', JSON.stringify(dragInfo(this, 'drag')));
                 e.dataTransfer.setData('text/html', this.innerHTML);
-                console.log(that.newCurriculum.children[0].children[0].label);
             };
 
             //Drag over handler
@@ -296,6 +296,22 @@
                     document.querySelector('.over').classList.remove('over');
                 }
                 document.querySelector('[dragging]').removeAttribute('dragging');
+
+                if (that.currChange) {
+                    var removeMe = $(e.srcElement);
+                    if (that.currChange.method === 'slot') {
+                        var target = that.currChange.target;
+                        var targetEl = $('[data-nid="' + target + '"] .item')[that.currChange.newWeight];
+                        removeMe.prev().remove();
+                        removeMe.insertBefore(targetEl);
+                        $('<li class="slot" dragUnsetSlot="true"></li>').insertBefore(targetEl);
+                    } else {
+                        removeMe.prev().remove();
+                        removeMe.remove();
+                    }
+                    that.currChange = false;
+                    that.reIndex();
+                }
             };
 
             //drop handler
@@ -315,7 +331,10 @@
                         id: null,
                         label: null
                     });
-                    console.log(deleteFrom);
+
+                    //dragging from one column to another
+                    if (that.dragSrc.parentNode !== this.parentNode) {}
+
                     //if you dropped it on an empty slot, get the family of the parent element
                     if (!this.childNodes.length) {
                         targetFamily = that.getFamily({
@@ -329,8 +348,14 @@
                             spliceMe: targetFamily,
                             injectMe: droppedFamily[1],
                             newWeight: newWeight,
-                            oldWeight: parseInt(droppedFamily[0].weight, 10)
+                            oldWeight: parseInt(droppedFamily[0].weight, 10),
+                            deleteFrom: deleteFrom
                         });
+                        that.currChange = {
+                            method: 'slot',
+                            newWeight: newWeight,
+                            target: targetFamily.nid
+                        };
                     } else {
                         targetFamily = dragInfo(this, 'drop');
                         if (!targetFamily[1].children) {
@@ -343,11 +368,11 @@
                             oldWeight: parseInt(droppedFamily[0].weight, 10),
                             deleteFrom: deleteFrom
                         });
+                        that.currChange = {
+                            method: 'move'
+                        };
                     }
-
-
                 }
-                console.log(that.newCurriculum.children[0].children[0].label);
 
                 return false;
             };
@@ -368,6 +393,29 @@
                 el.removeAttribute('dragUnsetSlot');
             });
         },
+        //Method to reindex everything on change
+        reIndex: function () {
+            var columns = $('.column');
+            //Loop through the columns
+            $.each(columns, function (index, value) {
+                //Loop through the items in each column
+                $.each($(value).children('.item'), function (index, value) {
+                    var that = $(this);
+                    var child = $(that.children('h3'));
+                    //If the item is active fix the ancestry for the it's open column
+                    if (that.hasClass('active')) {
+                        var thatColumnId = child.attr('data-nid');
+                        var thatColumn = $('.colWrapper > [data-nid="' + thatColumnId + '"]');
+                        var columnAncestry = thatColumn.attr('data-ancestry').split('.');
+                        columnAncestry.pop();
+                        columnAncestry.push(index);
+                        thatColumn.attr('data-ancestry', columnAncestry.join('.'));
+                    }
+                    //Update the index of each item
+                    child.attr('data-index', index);
+                });
+            });
+        },
         //Method to splice in items
         spliceIn: function (options) {
             var objectToSplice = options.spliceMe;
@@ -376,7 +424,7 @@
             var oldWeight = options.oldWeight;
             var deleteFrom = options.deleteFrom || null;
             var that = this;
-
+            console.log(options)
             //Splice the injected element into the object at it's new position
             objectToSplice.children.splice(newWeight, 0, objectToInject);
 
@@ -390,6 +438,7 @@
             } else {
                 objectToSplice.children.splice(oldWeight, 1);
             }
+            console.log(that.newCurriculum);
         },
         //get ancestors of clicked item based on this ancestry
         getFamily: function (info) {
