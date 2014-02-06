@@ -4,6 +4,9 @@
         dragSrc : {
 
         },
+        dragRules : {
+            maxGenerations: 4
+        },
         currChange : false,
         init : function () {
             //store this as that
@@ -302,17 +305,21 @@
                     document.querySelector('.over').classList.remove('over');
                 }
                 document.querySelector('[dragging]').removeAttribute('dragging');
-                console.log(that.currChange);
                 if (that.currChange) {
                     var removeMe = $(e.srcElement);
                     var target;
+                    console.log(that.currChange);
                     if (that.currChange.method === 'slot') {
                         target = $('[data-nid="' + that.currChange.target + '"] .item');
                         var targetEl;
                         //remove slot before this item
                         removeMe.prev().remove();
+                        //If no elements exist yet
+                        if (!target.length) {
+                            removeMe.appendTo($('section > [data-nid="' + that.currChange.target + '"]'));
+                            $('<li class="slot" dragUnsetSlot="true"></li>').insertAfter(removeMe);
                         //if it's not the last element in the column
-                        if (that.currChange.newWeight !== target.length) {
+                        } else if (that.currChange.newWeight !== target.length) {
                             targetEl = target[that.currChange.newWeight];
                             removeMe.insertBefore(targetEl);
                             $('<li class="slot" dragUnsetSlot="true"></li>').insertBefore(targetEl);
@@ -356,8 +363,6 @@
                         label: null
                     });
 
-                    //dragging from one column to another
-                    if (that.dragSrc.parentNode !== this.parentNode) {}
 
                     //if you dropped it on an empty slot, get the family of the parent element
                     if (!this.childNodes.length) {
@@ -366,6 +371,8 @@
                             id: this.parentNode.getAttribute('data-nid'),
                             label: null
                         });
+                        //check for legal move
+                        console.log(this);
                         //Splice this new arrangement into the curriculum object
                         var newWeight = $(this).index() / 2;
                         that.spliceIn({
@@ -432,9 +439,11 @@
                         var thatColumnId = child.attr('data-nid');
                         var thatColumn = $('.colWrapper > [data-nid="' + thatColumnId + '"]');
                         var columnAncestry = thatColumn.attr('data-ancestry').split('.');
+                        var thisAncestry = that.parents('ul').attr('data-ancestry');
+
                         columnAncestry.pop();
                         columnAncestry.push(index);
-                        thatColumn.attr('data-ancestry', columnAncestry.join('.'));
+                        thatColumn.attr('data-ancestry', thisAncestry.replace('root.', '') + '.' + index);
                     }
                     //Update the index of each item
                     child.attr('data-index', index);
@@ -449,7 +458,7 @@
             var oldWeight = options.oldWeight;
             var deleteFrom = options.deleteFrom || null;
             var that = this;
-            console.log(options)
+            console.log(options);
             //Splice the injected element into the object at it's new position
             objectToSplice.children.splice(newWeight, 0, objectToInject);
 
@@ -463,7 +472,6 @@
             } else {
                 objectToSplice.children.splice(oldWeight, 1);
             }
-            console.log(that.newCurriculum);
         },
         //get ancestors of clicked item based on this ancestry
         getFamily: function (info) {
@@ -497,6 +505,9 @@
             if (update) {
                 thisItem.label = label;
                 thisItem.nid = id;
+            }
+            if (!thisItem.children) {
+                thisItem.children = [];
             }
             return thisItem;
         },
