@@ -427,6 +427,17 @@ th {
     overflow:auto;
 }
 
+.deleter {
+    padding:5px;
+    border:1px solid black;
+    cursor:pointer;
+    width:100px;
+    height:20px;
+    text-align:center;
+    margin:10px auto;
+
+}
+
 /* ==========================================================================
    Main Nav Column
    ========================================================================== */

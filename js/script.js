@@ -1,14 +1,18 @@
 'use strict';
 (function () {
     var nestedColumns = {
-        dragSrc : {
-
-        },
-        dragRules : {
+        //used to set source of dragging items
+        dragSrc: {},
+        //rules for dragging
+        dragRules: {
+            //max number of columns allowed
             maxGenerations: 3
         },
-        currChange : false,
-        init : function () {
+        //start a count for new node ids
+        newNodes: -1,
+        changedItems: {},
+        currChange: false,
+        init: function () {
             //store this as that
             var that = this;
             //Build first view
@@ -21,6 +25,12 @@
             //add the add item functionality
             $('.addItem').click(function () {
                 that.addItem($(this).siblings('ul'));
+            });
+
+            //set deleter
+            //todo: tell keith he is a dummy because what item do you delete
+            $('.deleter').click(function () {
+                that.deleteItem($('.current'));
             });
 
             //init dragging code
@@ -53,12 +63,13 @@
             mainColumn.append(baseClassLabels);
         },
         //method for selecting an element
-        select : function (item) {
+        select: function (item) {
             var that = this;
             var thisId = $(item).find('h3').attr('data-nid');
             var thisIndex = $(item).find('h3').attr('data-index');
             var thisItemTitle = $(item).children('h3').html();
             var thisAncestry = $(item).parent().attr('data-ancestry');
+            var generation = thisAncestry.split('.').length;
             var newFamily;
 
             //check if this item is active
@@ -67,16 +78,17 @@
             if ($(item).hasClass('active') || !thisItemTitle) {
                 return false;
 
-                //if it isn't active remove other columns after this one
+            //if it isn't active remove other columns after this one
             } else if ($(item).siblings().hasClass('active')) {
                 $(item).parents('section').nextAll().remove();
             }
 
             //remove active class from all siblings
             $(item).siblings().removeClass('active');
+            $('.item').removeClass('current');
 
             //add active class to this item
-            $(item).addClass('active');
+            $(item).addClass('active').addClass('current');
 
             //Check if this is the root column
             //if not add to the ancestry
@@ -93,7 +105,23 @@
                 title: thisItemTitle
             });
             //display next container
-            this.showChildContainer(newFamily, thisAncestry, thisItemTitle);
+            if (generation < that.dragRules.maxGenerations) {
+                this.showChildContainer(newFamily, thisAncestry, thisItemTitle);
+            }
+        },
+        //method to update node info
+        updateNodes: function (info) {
+            var weight = info.weight;
+            var nid = info.nid;
+            var label = info.label;
+            var parent = info.parent;
+            var that = this;
+            that.changedItems[nid] = {
+                weight: weight,
+                nid: nid,
+                label: label,
+                parent: parent
+            }
         },
         //method to show new container
         showChildContainer: function (family, ancestry, title) {
@@ -150,11 +178,11 @@
 
         },
         //method to add new item
-        addItem : function (el) {
+        addItem: function (el) {
             var that = this;
 
             //append the new item
-            $('<li draggable="true" dragUnsetItem="true"><input type="text"></li>')
+            $('<li draggable="true" dragUnsetItem="true"><input type="text" data-nid="' + that.newNodes + '"></li>')
                 .addClass('item')
                 .on({
                     click: function (event) {
@@ -167,7 +195,9 @@
                 .focus()
                 .keyup(function (event) {
                     if (event.keyCode === 13) {
-                        $('<h3 data-nid="null" data-index="' + ($(this).parent().index() - 1) / 2 + '">' + $(this).val() + '</h3>').appendTo($(this).parent());
+                        $('<h3 data-nid="' + $(this).attr('data-nid') + '" data-index="' + ($(this).parent().index() - 1) / 2 + '">'
+                            + $(this).val() + '' +
+                            '</h3>').appendTo($(this).parent());
                         var thisAncestry;
                         if ($(this).parents('ul').attr('data-ancestry') === 'root') {
                             thisAncestry = ($(this).parent().index() - 1) / 2;
@@ -177,7 +207,7 @@
                         that.getFamily({
                             index: thisAncestry.toString(),
                             title: $(this).val(),
-                            id : null,
+                            nid : that.newNodes,
                             update: true
                         });
                         $(this).remove();
@@ -191,7 +221,7 @@
             //Check if this is the root column
             //if not add to the ancestry
             //else make this ancestry equal to clicked item
-            var newIndex = (el.children().last().index() - 1) / 2;
+            var newIndex = el.children().last().index() / 2 - 1;
             if (el.attr('data-ancestry') !== 'root') {
                 //Add this to the object for tracking purposes
                 that.getFamily({
@@ -208,14 +238,19 @@
             }
 
             that.dragSet();
+            that.updateNodes({
+                nid: that.newNodes,
+                weight: newIndex,
+                label: null,
+                parent: el.attr('data-nid')
+            });
+            console.log(that.changedItems);
+            that.newNodes--;
         },
         dragSet : function () {
             var dragUnset = document.querySelectorAll('[dragUnsetItem]');
             var dragUnsetSlot = document.querySelectorAll('[dragUnsetSlot]');
-            var dragSrcEl = null;
             var that = this;
-            var dragElInfo;
-            var dropElInfo;
 
             //function to build info of d & d items
             var dragInfo = function (el, action) {
@@ -363,6 +398,12 @@
                         label: null
                     });
 
+                    //get generation of target element
+                    var generation = this.parentNode.getAttribute('data-ancestry').split('.').length;
+                    //get generation count of dropped element
+                    var dropGen = droppedFamily[1].children.length;
+                    var dropGenDescendants;
+
 
                     //if you dropped it on an empty slot, get the family of the parent element
                     if (!this.childNodes.length) {
@@ -372,15 +413,14 @@
                             label: null
                         });
                         //check for legal move
-                        //get generation of target element
-                        var generation = this.parentNode.getAttribute('data-ancestry').split('.').length;
-                        //get generation count of dropped element
-                        var dropGen = droppedFamily[1].children.length;
                         if (dropGen) {
-                            console.log(that.generationCount(droppedFamily[1].children));
+                            dropGenDescendants = that.generationCount(droppedFamily[1].children);
+                            if ((generation + dropGenDescendants) > that.dragRules.maxGenerations) {
+                                alert('This item has too many descendants to go here.');
+                                return false;
+                            }
                         }
 
-                        console.log(generation, dropGen);
                         //Splice this new arrangement into the curriculum object
                         var newWeight = $(this).index() / 2;
                         that.spliceIn({
@@ -399,6 +439,16 @@
                         targetFamily = dragInfo(this, 'drop');
                         if (!targetFamily[1].children) {
                             targetFamily[1].children = [];
+                        }
+                        //check for legal move
+                        if (dropGen) {
+                            dropGenDescendants = that.generationCount(droppedFamily[1].children);
+                        } else {
+                            dropGenDescendants = 0;
+                        }
+                        if ((generation + dropGenDescendants) >= that.dragRules.maxGenerations) {
+                            alert('This item has too many descendants to go here.');
+                            return false;
                         }
                         that.spliceIn({
                             spliceMe: targetFamily[1],
@@ -433,28 +483,72 @@
                 el.removeAttribute('dragUnsetSlot');
             });
         },
+        //Method to delete items
+        deleteItem: function (item) {
+            var el = item;
+            var elChild = $(item.children('h3'));
+            var itemId = elChild.attr('data-nid');
+            var index = elChild.attr('data-index');
+            var ancestry = $(el.parents('ul')).attr('data-ancestry');
+            var box = el.parents('section').nextAll('section');
+            var that = this;
+            var deleteFrom;
+            var deleteMe;
+            var warn = true;
+            if (ancestry === 'root') {
+                deleteMe = that.getFamily({
+                    index: index
+                });
+            } else {
+                deleteMe = that.getFamily({
+                    index: ancestry + '.' + index
+                });
+            }
+            if (deleteMe.children.length) {
+                warn = confirm('This item has descendants, are you sure you want to delete it?');
+            }
+            if (warn) {
+                deleteFrom = that.getFamily({
+                    index: ancestry,
+                    title: null,
+                    nid: null
+                });
+                deleteFrom.children.splice(index, 1);
+                box.remove();
+                el.prev().remove();
+                el.remove();
+                that.reIndex();
+            }
+
+        },
         //Method to count generations
         generationCount: function (children) {
             //start count at 1 for first generation
             var count = 1;
-            var childrensChildren = [];
-            var counter = function (kids) {
+            var childrensChildren = children;
+            //recursive strategy to count generations
+            var counter = function () {
+                var kids = childrensChildren;
                 childrensChildren = [];
                 //loop through children to look for more children
                 for (var c = 0, l = kids.length; c < l; c++) {
+                    //if there are children
                     if (kids[c].children) {
                         if (kids[c].children.length) {
-                            childrensChildren.push(kids[c].children);
+                            //loop through the childrens children and push them to an array
+                            for (var cc = 0, cl = kids[c].children.length; cc < cl; cc++) {
+                                childrensChildren.push(kids[c].children[cc]);
+                            }
                         }
                     }
                 }
-                console.log(childrensChildren);
-                if (childrensChildren.length) {
+                //if the array has any items increment counter and count next items generation
+                if (childrensChildren.length && count < 5) {
                     count++;
+                    counter(childrensChildren);
                 }
-                counter(childrensChildren);
             };
-            counter(children);
+            counter();
             return count;
         },
         //Method to reindex everything on change
@@ -470,12 +564,14 @@
                     if (that.hasClass('active')) {
                         var thatColumnId = child.attr('data-nid');
                         var thatColumn = $('.colWrapper > [data-nid="' + thatColumnId + '"]');
-                        var columnAncestry = thatColumn.attr('data-ancestry').split('.');
+                        var columnAncestry;
                         var thisAncestry = that.parents('ul').attr('data-ancestry');
-
-                        columnAncestry.pop();
-                        columnAncestry.push(index);
-                        thatColumn.attr('data-ancestry', thisAncestry.replace('root.', '') + '.' + index);
+                        if (thisAncestry === 'root') {
+                            columnAncestry = index;
+                        } else {
+                            columnAncestry = thisAncestry + '.' + index;
+                        }
+                        thatColumn.attr('data-ancestry', columnAncestry);
                     }
                     //Update the index of each item
                     child.attr('data-index', index);
@@ -513,11 +609,12 @@
             var label = info.title;
             var thisItem = that.newCurriculum;
             var update = info.update || false;
-
+            console.log(info);
             //if you need root family
             if (info.index !== 'root') {
                 //loop through ancestry array
                 for (var i = 0, l = indexArray.length; i < l; i++) {
+                    console.log(thisItem);
                     if (!thisItem.children) {
                         thisItem.children = [];
                     }
