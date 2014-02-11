@@ -111,16 +111,23 @@
         },
         //method to update node info
         updateNodes: function (info) {
-            var weight = info.weight;
+            var that = this;
             var nid = info.nid;
+            var weight = info.weight;
             var label = info.label;
             var parent = info.parent;
-            var that = this;
-            that.changedItems[nid] = {
-                weight: weight,
-                nid: nid,
-                label: label,
-                parent: parent
+            if (!that.changedItems[nid]) {
+                that.changedItems[nid] = {};
+            }
+            that.changedItems[nid].nid = nid;
+            if (weight || weight === 0) {
+                that.changedItems[nid].weight = weight;
+            }
+            if (label) {
+                that.changedItems[nid].label = label;
+            }
+            if (parent || parent === 0) {
+                that.changedItems[nid].parent = parent
             }
         },
         //method to show new container
@@ -207,8 +214,12 @@
                         that.getFamily({
                             index: thisAncestry.toString(),
                             title: $(this).val(),
-                            nid : that.newNodes,
+                            nid : $(this).attr('data-nid'),
                             update: true
+                        });
+                        that.updateNodes({
+                            nid: $(this).attr('data-nid'),
+                            label: $(this).val()
                         });
                         $(this).remove();
                     }
@@ -244,7 +255,6 @@
                 label: null,
                 parent: el.attr('data-nid')
             });
-            console.log(that.changedItems);
             that.newNodes--;
         },
         dragSet : function () {
@@ -343,7 +353,6 @@
                 if (that.currChange) {
                     var removeMe = $(e.srcElement);
                     var target;
-                    console.log(that.currChange);
                     if (that.currChange.method === 'slot') {
                         target = $('[data-nid="' + that.currChange.target + '"] .item');
                         var targetEl;
@@ -366,7 +375,7 @@
                     } else {
                         target = $('section > [data-nid="' + that.currChange.target + '"]');
                         removeMe.prev().remove();
-                        //if the column you drop on is opened append it to the end, otherwise just reove it
+                        //if the column you drop on is opened append it to the end, otherwise just remove it
                         if (target.length) {
                             removeMe.appendTo(target);
                             $('<li class="slot" dragUnsetSlot="true"></li>').insertAfter(removeMe);
@@ -560,7 +569,7 @@
                 $.each($(value).children('.item'), function (index, value) {
                     var that = $(this);
                     var child = $(that.children('h3'));
-                    //If the item is active fix the ancestry for the it's open column
+                    //If the item is active fix the ancestry for it's open column
                     if (that.hasClass('active')) {
                         var thatColumnId = child.attr('data-nid');
                         var thatColumn = $('.colWrapper > [data-nid="' + thatColumnId + '"]');
@@ -586,7 +595,6 @@
             var oldWeight = options.oldWeight;
             var deleteFrom = options.deleteFrom || null;
             var that = this;
-            console.log(options);
             //Splice the injected element into the object at it's new position
             objectToSplice.children.splice(newWeight, 0, objectToInject);
 
@@ -609,12 +617,10 @@
             var label = info.title;
             var thisItem = that.newCurriculum;
             var update = info.update || false;
-            console.log(info);
             //if you need root family
             if (info.index !== 'root') {
                 //loop through ancestry array
                 for (var i = 0, l = indexArray.length; i < l; i++) {
-                    console.log(thisItem);
                     if (!thisItem.children) {
                         thisItem.children = [];
                     }
