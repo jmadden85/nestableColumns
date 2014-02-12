@@ -526,7 +526,7 @@
                 box.remove();
                 el.prev().remove();
                 el.remove();
-                that.reIndex();
+                that.reIndex(deleteFrom);
             }
 
         },
@@ -561,8 +561,21 @@
             return count;
         },
         //Method to reindex everything on change
-        reIndex: function () {
+        reIndex: function (splicedObject) {
             var columns = $('.column');
+            var that = this;
+            if (splicedObject) {
+                var parent = splicedObject.nid;
+                $.each(splicedObject.children, function (index, value) {
+                    that.updateNodes({
+                        parent: parent,
+                        nid: value.nid,
+                        label: value.label,
+                        weight: index
+                    });
+                });
+                console.log(that.changedItems);
+            }
             //Loop through the columns
             $.each(columns, function (index, value) {
                 //Loop through the items in each column
@@ -608,6 +621,7 @@
             } else {
                 objectToSplice.children.splice(oldWeight, 1);
             }
+            that.reIndex(objectToSplice);
         },
         //get ancestors of clicked item based on this ancestry
         getFamily: function (info) {
