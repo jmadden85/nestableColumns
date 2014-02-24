@@ -666,209 +666,305 @@
             "children":[
                 {
                     "nid":"211",
+                    "bundle":"course_module",
                     "label":"Modules",
+                    "weight":0,
                     "children":[
                         {
                             "nid":"212",
+                            "bundle":"course_module",
                             "label":"Module 1",
+                            "weight":0,
                             "children":[
                                 {
                                     "nid":"213",
+                                    "bundle":"course_module",
                                     "label":"Section 1",
+                                    "weight":0,
                                     "children":[
                                         {
                                             "nid":"214",
-                                            "label":"First Video"
+                                            "bundle":"video",
+                                            "label":"First Video",
+                                            "weight":0
                                         },
                                         {
                                             "nid":"215",
-                                            "label":"First Audio"
+                                            "bundle":"audio",
+                                            "label":"First Audio",
+                                            "weight":1
                                         },
                                         {
                                             "nid":"216",
-                                            "label":"Hello World!"
+                                            "bundle":"video",
+                                            "label":"Hello World!",
+                                            "weight":2
                                         },
                                         {
                                             "nid":"482",
-                                            "label":"Welcome"
+                                            "bundle":"video",
+                                            "label":"Welcome",
+                                            "weight":3
                                         }
                                     ]
                                 },
                                 {
                                     "nid":"218",
+                                    "bundle":"course_module",
                                     "label":"Section 2",
+                                    "weight":1,
                                     "children":[
                                         {
                                             "nid":"220",
-                                            "label":"Second Video"
+                                            "bundle":"video",
+                                            "label":"Second Video",
+                                            "weight":0
                                         },
                                         {
                                             "nid":"221",
-                                            "label":"Second Hello World!"
+                                            "bundle":"video",
+                                            "label":"Second Hello World!",
+                                            "weight":1
                                         },
                                         {
                                             "nid":"225",
-                                            "label":"Third Audio"
+                                            "bundle":"audio",
+                                            "label":"Third Audio",
+                                            "weight":2
                                         },
                                         {
                                             "nid":"330",
-                                            "label":"Quiz #1"
+                                            "bundle":"webform_quiz",
+                                            "label":"Quiz #1",
+                                            "weight":3
                                         }
                                     ]
                                 },
                                 {
                                     "nid":"222",
-                                    "label":"Orphan Video"
+                                    "bundle":"video",
+                                    "label":"Orphan Video",
+                                    "weight":2
                                 },
                                 {
                                     "nid":"223",
-                                    "label":"Orphan Audio"
+                                    "bundle":"audio",
+                                    "label":"Orphan Audio",
+                                    "weight":3
                                 },
                                 {
                                     "nid":"224",
+                                    "bundle":"course_module",
                                     "label":"Section 3",
+                                    "weight":4,
                                     "children":[
                                         {
                                             "nid":"219",
-                                            "label":"Second Audio"
+                                            "bundle":"audio",
+                                            "label":"Second Audio",
+                                            "weight":0
                                         },
                                         {
                                             "nid":"226",
-                                            "label":"Third Hello World!"
+                                            "bundle":"video",
+                                            "label":"Third Hello World!",
+                                            "weight":1
                                         },
                                         {
                                             "nid":"227",
-                                            "label":"Third Video"
+                                            "bundle":"video",
+                                            "label":"Third Video",
+                                            "weight":2
                                         },
                                         {
                                             "nid":"329",
-                                            "label":"First PDF Thing"
+                                            "bundle":"slides",
+                                            "label":"First PDF Thing",
+                                            "weight":3
                                         }
                                     ]
                                 },
                                 {
                                     "nid":"410",
-                                    "label":"Last Discussion"
+                                    "bundle":"discussion_topic",
+                                    "label":"Last Discussion",
+                                    "weight":5
                                 },
                                 {
                                     "nid":"413",
-                                    "label":"Another PDF"
+                                    "bundle":"slides",
+                                    "label":"Another PDF",
+                                    "weight":6
                                 },
                                 {
                                     "nid":"452",
-                                    "label":"Take a Photo"
+                                    "bundle":"checklist",
+                                    "label":"Take a Photo",
+                                    "weight":7
                                 }
                             ]
                         },
                         {
                             "nid":"331",
+                            "bundle":"course_module",
                             "label":"Module 2",
+                            "weight":1,
                             "children":[
                                 {
                                     "nid":"332",
-                                    "label":"Second Checklist"
+                                    "bundle":"checklist",
+                                    "label":"Second Checklist",
+                                    "weight":0
                                 },
                                 {
                                     "nid":"348",
-                                    "label":"Media Length"
+                                    "bundle":"video",
+                                    "label":"Media Length",
+                                    "weight":1
                                 },
                                 {
                                     "nid":"407",
-                                    "label":"Vid with media lenght"
+                                    "bundle":"video",
+                                    "label":"Vid with media lenght",
+                                    "weight":2
                                 },
                                 {
                                     "nid":"408",
-                                    "label":"One more PDF"
+                                    "bundle":"slides",
+                                    "label":"One more PDF",
+                                    "weight":3
                                 },
                                 {
                                     "nid":"447",
-                                    "label":"Test Audio - meditation break"
+                                    "bundle":"audio",
+                                    "label":"Test Audio - meditation break",
+                                    "weight":4
                                 },
                                 {
                                     "nid":"469",
-                                    "label":"fulfillment ACT"
+                                    "bundle":"seminar",
+                                    "label":"fulfillment ACT",
+                                    "weight":5
                                 }
                             ]
                         },
                         {
                             "nid":"453",
-                            "label":"Test 1"
+                            "bundle":"webform_test",
+                            "label":"Test 1",
+                            "weight":2
                         },
                         {
                             "nid":"466",
-                            "label":"First ACT"
+                            "bundle":"seminar",
+                            "label":"First ACT",
+                            "weight":3
                         },
                         {
                             "nid":"483",
+                            "bundle":"course_module",
                             "label":"Module 4",
+                            "weight":4,
                             "children":[
                                 {
                                     "nid":"484",
-                                    "label":"Welcome Video"
+                                    "bundle":"video",
+                                    "label":"Welcome Video",
+                                    "weight":0
                                 }
                             ]
                         },
                         {
                             "nid":"487",
+                            "bundle":"course_module",
                             "label":"Module 3",
+                            "weight":5,
                             "children":[
                                 {
                                     "nid":"488",
+                                    "bundle":"course_module",
                                     "label":"Welcome ",
+                                    "weight":0,
                                     "children":[
                                         {
                                             "nid":"491",
-                                            "label":"Welcome"
+                                            "bundle":"video",
+                                            "label":"Welcome",
+                                            "weight":0
                                         },
                                         {
                                             "nid":"493",
-                                            "label":"Welcome slides"
+                                            "bundle":"slides",
+                                            "label":"Welcome slides",
+                                            "weight":1
                                         },
                                         {
                                             "nid":"494",
-                                            "label":"Keynote"
+                                            "bundle":"video",
+                                            "label":"Keynote",
+                                            "weight":2
                                         },
                                         {
                                             "nid":"495",
-                                            "label":"Keynote slides"
+                                            "bundle":"slides",
+                                            "label":"Keynote slides",
+                                            "weight":3
                                         },
                                         {
                                             "nid":"496",
-                                            "label":"Mission"
+                                            "bundle":"video",
+                                            "label":"Mission",
+                                            "weight":4
                                         },
                                         {
                                             "nid":"497",
-                                            "label":"Mission slides"
+                                            "bundle":"slides",
+                                            "label":"Mission slides",
+                                            "weight":5
                                         },
                                         {
                                             "nid":"498",
-                                            "label":"IIN Mission Statement"
+                                            "bundle":"slides",
+                                            "label":"IIN Mission Statement",
+                                            "weight":6
                                         },
                                         {
                                             "nid":"499",
-                                            "label":"The Color Red and Spirals"
+                                            "bundle":"audio",
+                                            "label":"The Color Red and Spirals",
+                                            "weight":7
                                         },
                                         {
                                             "nid":"500",
-                                            "label":"The Color Red and Spirals Slides"
+                                            "bundle":"slides",
+                                            "label":"The Color Red and Spirals Slides",
+                                            "weight":8
                                         }
                                     ]
                                 },
                                 {
                                     "nid":"489",
+                                    "bundle":"course_module",
                                     "label":"Curriculum Overview",
+                                    "weight":1,
                                     "children":[
                                         {
                                             "nid":"501",
-                                            "label":"Curriculum overview "
+                                            "bundle":"video",
+                                            "label":"Curriculum overview ",
+                                            "weight":0
                                         },
                                         {
                                             "nid":"503",
-                                            "label":"The Golden Path"
+                                            "bundle":"video",
+                                            "label":"The Golden Path",
+                                            "weight":1
                                         },
                                         {
                                             "nid":"504",
-                                            "label":"The Golden Path Step 1"
+                                            "bundle":"slides",
+                                            "label":"The Golden Path Step 1",
+                                            "weight":2
                                         }
                                     ]
                                 }
@@ -876,33 +972,47 @@
                         },
                         {
                             "nid":"606",
-                            "label":"Test"
+                            "bundle":"webform_test",
+                            "label":"Test",
+                            "weight":6
                         }
                     ]
                 },
                 {
                     "nid":"349",
-                    "label":"Health History"
+                    "bundle":"webform_assignment",
+                    "label":"Health History",
+                    "weight":1
                 },
                 {
                     "nid":"420",
+                    "bundle":"course_module",
                     "label":"CC",
+                    "weight":2,
                     "children":[
                         {
                             "nid":"470",
+                            "bundle":"course_module",
                             "label":"CC Container",
+                            "weight":0,
                             "children":[
                                 {
                                     "nid":"421",
-                                    "label":"Marc - Test CC"
+                                    "bundle":"seminar",
+                                    "label":"Marc - Test CC",
+                                    "weight":0
                                 },
                                 {
                                     "nid":"467",
-                                    "label":"Second ACT"
+                                    "bundle":"seminar",
+                                    "label":"Second ACT",
+                                    "weight":1
                                 },
                                 {
                                     "nid":"468",
-                                    "label":"Third ACT"
+                                    "bundle":"seminar",
+                                    "label":"Third ACT",
+                                    "weight":2
                                 }
                             ]
                         }
