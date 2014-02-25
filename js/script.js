@@ -120,6 +120,7 @@
                 that.changedItems[nid] = {};
             }
             that.changedItems[nid].nid = nid;
+            //Make sure the items are defined.
             if (weight || weight === 0) {
                 that.changedItems[nid].weight = weight;
             }
